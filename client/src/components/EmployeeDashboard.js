@@ -32,8 +32,7 @@ function EmployeeDashboard({ user, setUser }) {
     fetchAdvanceRequests();
   }, []);
 
-  // Không cần useEffect riêng vì calculateCurrentSalary được gọi trong render
-
+  // No need for a separate useEffect because calculateCurrentSalary is called in render
   const fetchLeaveRequests = async () => {
     try {
       const response = await api.get('/leave-requests');
@@ -83,12 +82,12 @@ function EmployeeDashboard({ user, setUser }) {
 
     const today = new Date();
     const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-    const currentDay = today.getDate(); // Số ngày từ đầu tháng đến hôm nay
+    const currentDay = today.getDate(); // Number of days from the start of the month until today
 
-    // Lương 1 ngày = Tổng lương / Tổng ngày trong tháng
+    // Daily wage = Total salary / Total days in the month
     const dailySalary = salaryInfo.totalSalary / daysInMonth;
 
-    // Tính số tiền đã ứng trong tháng
+    // Calculate the total amount of money advanced in the month
     const currentMonthStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0');
     const monthStart = new Date(currentMonthStr + '-01');
     monthStart.setHours(0, 0, 0, 0);
@@ -106,41 +105,40 @@ function EmployeeDashboard({ user, setUser }) {
       })
       .reduce((sum, req) => sum + (req.amount || 0), 0);
 
-    // Tính số ngày nghỉ trong tháng (chỉ tính đến hôm nay)
-    // Logic: Đếm tổng số ca nghỉ, 2 ca = 1 ngày, 1 ca = 0.5 ngày
+    // Calculate the number of days off in the month (count only up to today)
+    // Logic: Count total off shifts, 2 shifts = 1 day, 1 shift = 0.5 days
     let leaveShifts = 0; // Tổng số ca nghỉ
     (leaveRequests || []).forEach(req => {
       if (!req || req.status !== 'approved' || !req.date) return;
-      
-      // Parse date string (format: YYYY-MM-DD) thành Date object
+
+      // Parse date string (format: YYYY-MM-DD) into Date object
       const dateStr = req.date;
       const [year, month, day] = dateStr.split('-').map(Number);
       const leaveDate = new Date(year, month - 1, day);
       leaveDate.setHours(0, 0, 0, 0);
-      
-      // Chỉ tính các ngày nghỉ trong tháng hiện tại và <= hôm nay
+
+      // Only count days off within the current month and <= today
       if (leaveDate >= monthStart && leaveDate <= todayStart) {
         const timePeriod = (req.timePeriod || 'all day').toLowerCase();
         if (timePeriod === 'all day') {
-          leaveShifts += 2; // Nghỉ cả ngày = 2 ca
-        } else if (timePeriod === 'morning' || timePeriod === 'afternoon' || 
-                   timePeriod === 'morning shift' || timePeriod === 'afternoon shift') {
-          leaveShifts += 1; // Nghỉ 1 ca = 1 ca
+          leaveShifts += 2; // A full day off = 2 shifts
+        } else if (timePeriod === 'morning' || timePeriod === 'afternoon' ||
+          timePeriod === 'morning shift' || timePeriod === 'afternoon shift') {
+          leaveShifts += 1; // 1 shift off = 1 shift
         }
       }
     });
-    
-    // Tính số ngày nghỉ: 2 ca = 1 ngày, 1 ca = 0.5 ngày
-    // Ví dụ: 1 ca = 0.5 ngày, 2 ca = 1 ngày, 3 ca = 1.5 ngày, 4 ca = 2 ngày
-    // Công thức: số ngày = số ca / 2
+
+    // Calculate number of days off: 2 shifts = 1 day, 1 shift = 0.5 days
+    // Example: 1 shift = 0.5 days, 2 shifts = 1 day, 3 shifts = 1.5 days, 4 shifts = 2 days
+    // Formula: number of days = number of shifts / 2
     const leaveDays = leaveShifts / 2;
 
-    // Lương hiện tại = ((Tổng lương / Tổng ngày trong tháng) × Số ngày từ đầu tháng đến hôm nay) - Số tiền ứng - (Số ngày nghỉ × Lương 1 ngày)
-    const leaveDeduction = leaveDays * dailySalary;
+    // Current salary = ((Total salary / Total days in the month) × Number of days from the start of the month until today) - Advanced amount - (Number of days off × Daily wage)    const leaveDeduction = leaveDays * dailySalary;
     const currentSalary = (dailySalary * currentDay) - advanceAmount - leaveDeduction;
 
-    // Lương ứng tối đa = Lương hiện tại - (4 ngày lương)
-    // Lưu ý: Có thể là số âm
+    // Maximum advanceable salary = Current salary - (4 days' wage)
+    // Note: This may be a negative number
     const fourDaysSalary = 4 * dailySalary;
     const maxAdvanceAmount = currentSalary - fourDaysSalary;
 
@@ -152,9 +150,9 @@ function EmployeeDashboard({ user, setUser }) {
       advanceAmount: Math.ceil(advanceAmount),
       leaveDays,
       leaveDeduction: Math.ceil(leaveDeduction),
-      currentSalary: Math.ceil(currentSalary), // Có thể âm
+      currentSalary: Math.ceil(currentSalary), // Can be negative
       fourDaysSalary: Math.ceil(fourDaysSalary),
-      maxAdvanceAmount: Math.ceil(maxAdvanceAmount) // Có thể âm
+      maxAdvanceAmount: Math.ceil(maxAdvanceAmount) // Can be negative
     };
   };
 
@@ -176,7 +174,7 @@ function EmployeeDashboard({ user, setUser }) {
     }
   };
 
-  // Nhân viên không thể xóa đơn
+  // Employees cannot delete orders
   const handleDelete = async (id) => {
     alert('You do not have the authority to cancel your leave request. Please contact your manager.');
   };
@@ -246,8 +244,8 @@ function EmployeeDashboard({ user, setUser }) {
           <p>Employee</p>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
-          <button 
-            onClick={() => setShowChangePassword(!showChangePassword)} 
+          <button
+            onClick={() => setShowChangePassword(!showChangePassword)}
             className="primary-button"
             style={{ background: '#2196F3' }}
           >
@@ -271,12 +269,12 @@ function EmployeeDashboard({ user, setUser }) {
                 return (
                   <div style={{ textAlign: 'center', padding: '20px' }}>
                     <div style={{ fontSize: '18px', opacity: 0.9 }}>
-                     Salary information for this month is not yet available. Please contact management to arrange your salary.
+                      Salary information for this month is not yet available. Please contact management to arrange your salary.
                     </div>
                   </div>
                 );
               }
-              
+
               return (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
                   <div>
@@ -327,7 +325,7 @@ function EmployeeDashboard({ user, setUser }) {
                       {new Intl.NumberFormat('vi-VN').format(Math.round(salaryCalc.maxAdvanceAmount))} VNĐ
                     </div>
                     <div style={{ fontSize: '12px', opacity: 0.8, marginTop: '8px' }}>
-                      (Current salary: {new Intl.NumberFormat('vi-VN').format(Math.round(salaryCalc.currentSalary))} VNĐ - 
+                      (Current salary: {new Intl.NumberFormat('vi-VN').format(Math.round(salaryCalc.currentSalary))} VNĐ -
                       4 days' salary: {new Intl.NumberFormat('vi-VN').format(Math.round(salaryCalc.fourDaysSalary))} VNĐ)
                     </div>
                   </div>
@@ -341,13 +339,13 @@ function EmployeeDashboard({ user, setUser }) {
           <div className="dashboard-card" style={{ marginBottom: '20px' }}>
             <div className="card-header">
               <h2>Change password</h2>
-              <button 
+              <button
                 onClick={() => {
                   setShowChangePassword(false);
                   setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
                   setPasswordError('');
                   setPasswordSuccess('');
-                }} 
+                }}
                 className="logout-button"
               >
                 Close
@@ -356,7 +354,7 @@ function EmployeeDashboard({ user, setUser }) {
             <form onSubmit={handleChangePassword} className="leave-form">
               {passwordError && <div className="error-message">{passwordError}</div>}
               {passwordSuccess && <div style={{ background: '#d4edda', color: '#155724', padding: '12px', borderRadius: '8px', marginBottom: '20px' }}>{passwordSuccess}</div>}
-              
+
               <div className="form-group">
                 <label>Current password</label>
                 <input
@@ -409,7 +407,7 @@ function EmployeeDashboard({ user, setUser }) {
           {showForm && (
             <form onSubmit={handleSubmit} className="leave-form">
               {error && <div className="error-message">{error}</div>}
-              
+
               <div className="form-row">
                 <div className="form-group">
                   <label>Day off</label>
@@ -460,17 +458,17 @@ function EmployeeDashboard({ user, setUser }) {
                     <div>
                       <h3>Leave of absence request</h3>
                       <p className="request-date">
-                        {request.date ? new Date(request.date).toLocaleDateString('en-US') : 
-                         request.startDate ? new Date(request.startDate).toLocaleDateString('en-US') : ''}
+                        {request.date ? new Date(request.date).toLocaleDateString('en-US') :
+                          request.startDate ? new Date(request.startDate).toLocaleDateString('en-US') : ''}
                         {request.timePeriod && ` (${request.timePeriod})`}
                         {request.startTimePeriod && !request.timePeriod && ` (${request.startTimePeriod})`}
-                        {request.endDate && request.startDate !== request.endDate && 
-                         ` - ${new Date(request.endDate).toLocaleDateString('en-US')}`}
-                        {request.endTimePeriod && request.startTimePeriod !== request.endTimePeriod && 
-                         !request.timePeriod && ` (${request.endTimePeriod})`}
+                        {request.endDate && request.startDate !== request.endDate &&
+                          ` - ${new Date(request.endDate).toLocaleDateString('en-US')}`}
+                        {request.endTimePeriod && request.startTimePeriod !== request.endTimePeriod &&
+                          !request.timePeriod && ` (${request.endTimePeriod})`}
                       </p>
                     </div>
-                    <span 
+                    <span
                       className="status-badge"
                       style={{ backgroundColor: getStatusColor(request.status) }}
                     >
