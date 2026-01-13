@@ -8,7 +8,7 @@ const path = require('path');
 
 const app = express();
 const PORT = 5000;
-const JWT_SECRET = 'your-secret-key-change-in-production';
+const JWT_SECRET = 'Group_6';
 
 // Middleware
 app.use(cors());
@@ -27,7 +27,7 @@ function initDatabase() {
           id: 1,
           username: 'admin',
           password: bcrypt.hashSync('admin123', 10),
-          name: 'Quản lý',
+          name: 'Admin',
           role: 'manager',
           email: 'admin@company.com'
         }
@@ -130,14 +130,14 @@ app.post('/api/users', authenticateToken, isManager, (req, res) => {
   const { username, password, name, email } = req.body;
 
   if (!username || !password || !name) {
-    return res.status(400).json({ error: 'Tên đăng nhập, mật khẩu và họ tên là bắt buộc' });
+    return res.status(400).json({ error: 'Username, password, and full name are required.' });
   }
 
   const db = readDB();
 
   // Check if username already exists
   if (db.users.find(u => u.username === username)) {
-    return res.status(400).json({ error: 'Tên đăng nhập đã tồn tại' });
+    return res.status(400).json({ error: 'The username already exists.' });
   }
 
   const newUser = {
@@ -223,7 +223,7 @@ app.post('/api/users/bulk-setup', authenticateToken, isManager, (req, res) => {
   writeDB(db);
 
   res.json({
-    message: `Đã xóa nhân viên Vũ và thêm ${addedUsers.length} nhân viên mới`,
+    message: `Employee Vu has been removed and added. ${addedUsers.length} new employee`,
     added: addedUsers
   });
 });
@@ -249,12 +249,12 @@ app.put('/api/users/:id', authenticateToken, isManager, (req, res) => {
 
   const userIndex = db.users.findIndex(u => u.id === userId);
   if (userIndex === -1) {
-    return res.status(404).json({ error: 'Không tìm thấy nhân viên' });
+    return res.status(404).json({ error: 'No staff found.' });
   }
 
   // Check if username already exists (excluding current user)
   if (username && db.users.find(u => u.username === username && u.id !== userId)) {
-    return res.status(400).json({ error: 'Tên đăng nhập đã tồn tại' });
+    return res.status(400).json({ error: 'The username already exists.' });
   }
 
   if (name) db.users[userIndex].name = name;
@@ -276,30 +276,30 @@ app.patch('/api/users/change-password', authenticateToken, (req, res) => {
   const { currentPassword, newPassword } = req.body;
 
   if (!currentPassword || !newPassword) {
-    return res.status(400).json({ error: 'Mật khẩu hiện tại và mật khẩu mới là bắt buộc' });
+    return res.status(400).json({ error: 'The current password and the new password are required.' });
   }
 
   if (newPassword.length < 6) {
-    return res.status(400).json({ error: 'Mật khẩu mới phải có ít nhất 6 ký tự' });
+    return res.status(400).json({ error: 'The new password must have at least 6 characters.' });
   }
 
   const db = readDB();
   const user = db.users.find(u => u.id === req.user.id);
 
   if (!user) {
-    return res.status(404).json({ error: 'Không tìm thấy người dùng' });
+    return res.status(404).json({ error: 'No user found' });
   }
 
   // Verify current password
   if (!bcrypt.compareSync(currentPassword, user.password)) {
-    return res.status(400).json({ error: 'Mật khẩu hiện tại không đúng' });
+    return res.status(400).json({ error: 'The current password is incorrect.' });
   }
 
   // Update password
   user.password = bcrypt.hashSync(newPassword, 10);
   writeDB(db);
 
-  res.json({ message: 'Đổi mật khẩu thành công' });
+  res.json({ message: 'Password changed successfully.' });
 });
 
 // Reset password for employee (Manager only)
@@ -310,21 +310,21 @@ app.patch('/api/users/:id/reset-password', authenticateToken, isManager, (req, r
 
   const userIndex = db.users.findIndex(u => u.id === userId);
   if (userIndex === -1) {
-    return res.status(404).json({ error: 'Không tìm thấy nhân viên' });
+    return res.status(404).json({ error: 'No staff found.' });
   }
 
   // If newPassword is provided, use it; otherwise use default
   const password = newPassword || '123456';
   
   if (password.length < 6) {
-    return res.status(400).json({ error: 'Mật khẩu phải có ít nhất 6 ký tự' });
+    return res.status(400).json({ error: 'MThe new password must have at least 6 characters.' });
   }
 
   db.users[userIndex].password = bcrypt.hashSync(password, 10);
   writeDB(db);
 
   res.json({ 
-    message: 'Đặt lại mật khẩu thành công',
+    message: 'Password changed successfully.',
     defaultPassword: password
   });
 });
@@ -338,7 +338,7 @@ app.get('/api/users/me/salary/:month', authenticateToken, (req, res) => {
 
     const user = db.users.find(u => u.id === userId);
     if (!user) {
-      return res.status(404).json({ error: 'Không tìm thấy người dùng' });
+      return res.status(404).json({ error: 'No user found' });
     }
 
     console.log(`[Salary API] User ID: ${userId}, Month: ${month}`);
@@ -351,7 +351,7 @@ app.get('/api/users/me/salary/:month', authenticateToken, (req, res) => {
     res.json({ month, salary });
   } catch (err) {
     console.error('Error in /api/users/me/salary/:month:', err);
-    res.status(500).json({ error: 'Lỗi khi lấy thông tin lương: ' + err.message });
+    res.status(500).json({ error: 'Error retrieving salary information: ' + err.message });
   }
 });
 
@@ -362,16 +362,16 @@ app.post('/api/users/:id/salary', authenticateToken, isManager, (req, res) => {
   const db = readDB();
 
   if (!month || salary === undefined || salary === null) {
-    return res.status(400).json({ error: 'Tháng và lương là bắt buộc' });
+    return res.status(400).json({ error: 'Monthly salary is required.' });
   }
 
   if (salary < 0) {
-    return res.status(400).json({ error: 'Lương không thể âm' });
+    return res.status(400).json({ error: 'Salaries cannot be negative.' });
   }
 
   const userIndex = db.users.findIndex(u => u.id === userId);
   if (userIndex === -1) {
-    return res.status(404).json({ error: 'Không tìm thấy nhân viên' });
+    return res.status(404).json({ error: 'No staff found.' });
   }
 
   // Initialize salaries object if not exists
@@ -384,7 +384,7 @@ app.post('/api/users/:id/salary', authenticateToken, isManager, (req, res) => {
   writeDB(db);
 
   res.json({
-    message: 'Đặt lương thành công',
+    message: 'Salary setting successful.',
     month,
     salary: db.users[userIndex].salaries[month]
   });
@@ -398,7 +398,7 @@ app.get('/api/users/:id/salary/:month', authenticateToken, isManager, (req, res)
 
   const user = db.users.find(u => u.id === userId);
   if (!user) {
-    return res.status(404).json({ error: 'Không tìm thấy nhân viên' });
+    return res.status(404).json({ error: 'No staff found.' });
   }
 
   const salary = user.salaries && user.salaries[month] ? user.salaries[month] : null;
@@ -413,7 +413,7 @@ app.get('/api/users/:id/salaries', authenticateToken, isManager, (req, res) => {
 
   const user = db.users.find(u => u.id === userId);
   if (!user) {
-    return res.status(404).json({ error: 'Không tìm thấy nhân viên' });
+    return res.status(404).json({ error: 'No staff found.' });
   }
 
   res.json({ salaries: user.salaries || {} });
@@ -425,18 +425,18 @@ app.delete('/api/users/:id', authenticateToken, isManager, (req, res) => {
   const db = readDB();
 
   if (userId === req.user.id) {
-    return res.status(400).json({ error: 'Không thể xóa tài khoản của chính bạn' });
+    return res.status(400).json({ error: 'You cannot delete your own account.' });
   }
 
   const userIndex = db.users.findIndex(u => u.id === userId);
   if (userIndex === -1) {
-    return res.status(404).json({ error: 'Không tìm thấy nhân viên' });
+    return res.status(404).json({ error: 'No staff found.' });
   }
 
   db.users.splice(userIndex, 1);
   writeDB(db);
 
-  res.json({ message: 'Xóa nhân viên thành công' });
+  res.json({ message: 'Employee removal successful.' });
 });
 
 // Submit leave request (Employee)
@@ -447,7 +447,7 @@ app.post('/api/leave-requests', authenticateToken, (req, res) => {
   // New simplified format (check if date field exists in request)
   if (date !== undefined && date !== null) {
     if (!date || date.trim() === '') {
-      return res.status(400).json({ error: 'Ngày nghỉ là bắt buộc' });
+      return res.status(400).json({ error: 'Days off are mandatory.' });
     }
 
     const db = readDB();
@@ -460,7 +460,7 @@ app.post('/api/leave-requests', authenticateToken, (req, res) => {
       // Quản lý có thể tạo đơn cho nhân viên khác
       const targetEmployee = db.users.find(u => u.id === parseInt(userId) && u.role === 'employee');
       if (!targetEmployee) {
-        return res.status(400).json({ error: 'Không tìm thấy nhân viên' });
+        return res.status(400).json({ error: 'No staff found.' });
       }
       targetUserId = parseInt(userId);
       targetUser = targetEmployee;
@@ -471,7 +471,7 @@ app.post('/api/leave-requests', authenticateToken, (req, res) => {
       userId: targetUserId,
       userName: targetUser.name,
       date,
-      timePeriod: timePeriod || 'cả ngày',
+      timePeriod: timePeriod || 'all day',
       reason: reason || '',
       status: 'approved', // Mặc định được duyệt
       submittedAt: new Date().toISOString(),
@@ -487,7 +487,7 @@ app.post('/api/leave-requests', authenticateToken, (req, res) => {
 
   // Old format (backward compatibility)
   if (!startDate || !endDate) {
-    return res.status(400).json({ error: 'Ngày bắt đầu và ngày kết thúc là bắt buộc' });
+    return res.status(400).json({ error: 'The start and end dates are required.' });
   }
 
   const db = readDB();
@@ -499,10 +499,10 @@ app.post('/api/leave-requests', authenticateToken, (req, res) => {
       userName: user.name,
       startDate,
       endDate,
-      startTimePeriod: startTimePeriod || 'cả ngày',
-      endTimePeriod: endTimePeriod || 'cả ngày',
+      startTimePeriod: startTimePeriod || 'all day',
+      endTimePeriod: endTimePeriod || 'all day',
       reason: reason || '',
-      type: type || 'nghỉ phép',
+      type: type || 'on leave',
       status: 'approved', // Mặc định được duyệt
       submittedAt: new Date().toISOString(),
       canEdit: false // Nhân viên không thể sửa
@@ -555,12 +555,12 @@ app.put('/api/leave-requests/:id', authenticateToken, (req, res) => {
   const requestIndex = db.leaveRequests.findIndex(r => r.id === requestId);
 
   if (requestIndex === -1) {
-    return res.status(404).json({ error: 'Không tìm thấy đơn nghỉ phép' });
+    return res.status(404).json({ error: 'No leave request found.' });
   }
 
   // Chỉ quản lý mới có quyền sửa
   if (req.user.role !== 'manager') {
-    return res.status(403).json({ error: 'Chỉ quản lý mới có quyền chỉnh sửa đơn nghỉ phép' });
+    return res.status(403).json({ error: 'Only managers have the authority to edit leave requests.' });
   }
 
   const request = db.leaveRequests[requestIndex];
@@ -623,18 +623,18 @@ app.delete('/api/leave-requests/:id', authenticateToken, (req, res) => {
   const requestIndex = db.leaveRequests.findIndex(r => r.id === requestId);
 
   if (requestIndex === -1) {
-    return res.status(404).json({ error: 'Không tìm thấy đơn nghỉ phép' });
+    return res.status(404).json({ error: 'No leave request found.' });
   }
 
   // Chỉ quản lý mới có quyền xóa
   if (req.user.role !== 'manager') {
-    return res.status(403).json({ error: 'Chỉ quản lý mới có quyền xóa đơn nghỉ phép' });
+    return res.status(403).json({ error: 'Only managers have the authority to edit leave requests.' });
   }
 
   db.leaveRequests.splice(requestIndex, 1);
   writeDB(db);
 
-  res.json({ message: 'Xóa đơn nghỉ phép thành công' });
+  res.json({ message: 'Leave request successfully deleted' });
 });
 
 // Advance salary requests
@@ -646,12 +646,12 @@ app.post('/api/advance-requests', authenticateToken, (req, res) => {
     const { userId, amount, reason } = req.body;
 
     if (amount === undefined || amount === null) {
-      return res.status(400).json({ error: 'Số tiền là bắt buộc' });
+      return res.status(400).json({ error: 'The amount is required.' });
     }
 
     const parsedAmount = parseFloat(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      return res.status(400).json({ error: 'Số tiền phải lớn hơn 0' });
+      return res.status(400).json({ error: 'The amount must be greater than 0.' });
     }
 
     const db = readDB();
@@ -667,11 +667,11 @@ app.post('/api/advance-requests', authenticateToken, (req, res) => {
     if (req.user.role === 'manager') {
       // Manager can create for any employee
       if (!userId) {
-        return res.status(400).json({ error: 'Nhân viên là bắt buộc' });
+        return res.status(400).json({ error: 'Staff are required.' });
       }
       const employee = db.users.find(u => u && u.id === parseInt(userId) && u.role === 'employee');
       if (!employee) {
-        return res.status(404).json({ error: 'Không tìm thấy nhân viên' });
+        return res.status(404).json({ error: 'No staff found.' });
       }
       targetUserId = parseInt(userId);
       targetUser = employee;
@@ -680,7 +680,7 @@ app.post('/api/advance-requests', authenticateToken, (req, res) => {
       targetUserId = req.user.id;
       targetUser = db.users.find(u => u && u.id === req.user.id);
       if (!targetUser) {
-        return res.status(404).json({ error: 'Không tìm thấy thông tin người dùng' });
+        return res.status(404).json({ error: 'User information not found.' });
       }
     }
 
@@ -711,7 +711,7 @@ app.post('/api/advance-requests', authenticateToken, (req, res) => {
     res.status(201).json(newRequest);
   } catch (err) {
     console.error('Error creating advance request:', err);
-    res.status(500).json({ error: 'Lỗi khi tạo yêu cầu ứng lương: ' + err.message });
+    res.status(500).json({ error: 'Error when creating a salary advance request: ' + err.message });
   }
 });
 
@@ -739,7 +739,7 @@ app.get('/api/advance-requests', authenticateToken, (req, res) => {
     res.json(requests || []);
   } catch (err) {
     console.error('Error fetching advance requests:', err);
-    res.status(500).json({ error: 'Lỗi khi lấy danh sách ứng lương' });
+    res.status(500).json({ error: 'Error when retrieving payroll list' });
   }
 });
 
@@ -750,7 +750,7 @@ app.patch('/api/advance-requests/:id/status', authenticateToken, isManager, (req
     const { status } = req.body;
 
     if (!['approved', 'rejected'].includes(status)) {
-      return res.status(400).json({ error: 'Trạng thái không hợp lệ' });
+      return res.status(400).json({ error: 'Invalid status' });
     }
 
     const db = readDB();
@@ -759,13 +759,13 @@ app.patch('/api/advance-requests/:id/status', authenticateToken, isManager, (req
     if (!db.advanceRequests || !Array.isArray(db.advanceRequests)) {
       db.advanceRequests = [];
       writeDB(db);
-      return res.status(404).json({ error: 'Không tìm thấy yêu cầu ứng lương' });
+      return res.status(404).json({ error: 'No salary advance requests found.' });
     }
     
     const requestIndex = db.advanceRequests.findIndex(r => r && r.id === requestId);
 
     if (requestIndex === -1) {
-      return res.status(404).json({ error: 'Không tìm thấy yêu cầu ứng lương' });
+      return res.status(404).json({ error: 'No salary advance requests found.' });
     }
 
     db.advanceRequests[requestIndex].status = status;
@@ -774,7 +774,7 @@ app.patch('/api/advance-requests/:id/status', authenticateToken, isManager, (req
     res.json(db.advanceRequests[requestIndex]);
   } catch (err) {
     console.error('Error updating advance request status:', err);
-    res.status(500).json({ error: 'Lỗi khi cập nhật trạng thái ứng lương' });
+    res.status(500).json({ error: 'Error when updating salary advance status' });
   }
 });
 
@@ -785,12 +785,12 @@ app.put('/api/advance-requests/:id', authenticateToken, isManager, (req, res) =>
     const { amount, reason } = req.body;
 
     if (amount === undefined || amount === null) {
-      return res.status(400).json({ error: 'Số tiền là bắt buộc' });
+      return res.status(400).json({ error: 'The amount is required.' });
     }
 
     const parsedAmount = parseFloat(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      return res.status(400).json({ error: 'Số tiền phải lớn hơn 0' });
+      return res.status(400).json({ error: 'The amount must be greater than 0.' });
     }
 
     const db = readDB();
@@ -799,13 +799,13 @@ app.put('/api/advance-requests/:id', authenticateToken, isManager, (req, res) =>
     if (!db.advanceRequests || !Array.isArray(db.advanceRequests)) {
       db.advanceRequests = [];
       writeDB(db);
-      return res.status(404).json({ error: 'Không tìm thấy yêu cầu ứng lương' });
+      return res.status(404).json({ error: 'No salary advance requests found.' });
     }
     
     const requestIndex = db.advanceRequests.findIndex(r => r && r.id === requestId);
 
     if (requestIndex === -1) {
-      return res.status(404).json({ error: 'Không tìm thấy yêu cầu ứng lương' });
+      return res.status(404).json({ error: 'No salary advance requests found.' });
     }
 
     db.advanceRequests[requestIndex].amount = parsedAmount;
@@ -815,7 +815,7 @@ app.put('/api/advance-requests/:id', authenticateToken, isManager, (req, res) =>
     res.json(db.advanceRequests[requestIndex]);
   } catch (err) {
     console.error('Error updating advance request:', err);
-    res.status(500).json({ error: 'Lỗi khi cập nhật yêu cầu ứng lương' });
+    res.status(500).json({ error: 'Error when updating salary advance request' });
   }
 });
 
@@ -829,22 +829,22 @@ app.delete('/api/advance-requests/:id', authenticateToken, isManager, (req, res)
     if (!db.advanceRequests || !Array.isArray(db.advanceRequests)) {
       db.advanceRequests = [];
       writeDB(db);
-      return res.status(404).json({ error: 'Không tìm thấy yêu cầu ứng lương' });
+      return res.status(404).json({ error: 'No salary advance requests found.' });
     }
     
     const requestIndex = db.advanceRequests.findIndex(r => r && r.id === requestId);
 
     if (requestIndex === -1) {
-      return res.status(404).json({ error: 'Không tìm thấy yêu cầu ứng lương' });
+      return res.status(404).json({ error: 'No salary advance requests found.' });
     }
 
     db.advanceRequests.splice(requestIndex, 1);
     writeDB(db);
 
-    res.json({ message: 'Xóa yêu cầu ứng lương thành công' });
+    res.json({ message: 'Salary advance request successfully deleted' });
   } catch (err) {
     console.error('Error deleting advance request:', err);
-    res.status(500).json({ error: 'Lỗi khi xóa yêu cầu ứng lương' });
+    res.status(500).json({ error: 'Error when deleting salary advance request' });
   }
 });
 

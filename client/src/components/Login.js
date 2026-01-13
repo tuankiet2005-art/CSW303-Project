@@ -20,7 +20,7 @@ function Login({ setUser }) {
       setUser(data.user);
       navigate(data.user.role === 'manager' ? '/manager' : '/employee');
     } catch (err) {
-      setError(err.response?.data?.error || 'Đăng nhập thất bại');
+      setError(err.response?.data?.error || 'Login Fail');
     } finally {
       setLoading(false);
     }
@@ -29,41 +29,41 @@ function Login({ setUser }) {
   return (
     <div className="login-container">
       <div className="login-card">
-        <h1>Đăng nhập</h1>
-        <p className="subtitle">Hệ thống quản lý nghỉ phép</p>
+        <h1>Log in</h1>
+        <p className="subtitle">Leave Management System</p>
         
         {error && <div className="error-message">{error}</div>}
         
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>Tên đăng nhập</label>
+            <label>Username</label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              placeholder="Nhập tên đăng nhập"
+              placeholder="Enter username"
             />
           </div>
           
           <div className="form-group">
-            <label>Mật khẩu</label>
+            <label>Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              placeholder="Nhập mật khẩu"
+              placeholder="Enter password"
             />
           </div>
           
           <button type="submit" disabled={loading} className="login-button">
-            {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+            {loading ? 'login...' : 'Log in'}
           </button>
         </form>
         
         <div className="login-info">
-          <p>Quản lý công nhân mai định seafoods</p>
+          <p>Management System</p>
         </div>
       </div>
     </div>
