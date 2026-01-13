@@ -63,11 +63,11 @@ function ManagerDashboard({ user, setUser }) {
   useEffect(() => {
     if (activeTab === 'leave-requests') {
       fetchLeaveRequests();
-      fetchEmployees(); // Cần để hiển thị danh sách nhân viên trong form tạo đơn
+      fetchEmployees(); // Need to display employee list in the order creation form
     } else if (activeTab === 'salary') {
       fetchEmployees();
-      fetchAdvanceRequests(); // Cần để tính số tiền đã ứng và hiển thị danh sách
-      fetchLeaveRequests(); // Cần để tính số ngày nghỉ
+      fetchAdvanceRequests(); // Need to display the employee list in the order creation form
+      fetchLeaveRequests(); // Need to calculate the number of days off
     } else if (activeTab === 'advance-salary') {
       fetchAdvanceRequests();
       fetchEmployees();
@@ -316,7 +316,7 @@ function ManagerDashboard({ user, setUser }) {
     }
   };
 
-  // Tính số tiền thực còn (giống công thức tính lương hiện tại của nhân viên)
+  // Calculate the actual remaining amount (same formula as calculating employee's current salary)
   const calculateRemainingSalaryForForm = (employeeId, totalSalary, advanceAmount) => {
     if (!totalSalary || totalSalary <= 0) {
       return 0;
@@ -326,18 +326,18 @@ function ManagerDashboard({ user, setUser }) {
     const [year, month] = salaryMonth.split('-').map(Number);
     const daysInMonth = new Date(year, month, 0).getDate();
     const currentDay = today.getDate();
-    
-    // Kiểm tra xem tháng được chọn có phải tháng hiện tại không
+
+    // Check if the selected month is the current month
     const isCurrentMonth = year === today.getFullYear() && month === today.getMonth() + 1;
     const daysToCalculate = isCurrentMonth ? currentDay : daysInMonth;
 
-    // Lương 1 ngày = Tổng lương / Tổng ngày trong tháng
+    // Daily wage = Total salary / Total days in the month
     const dailySalary = totalSalary / daysInMonth;
 
-    // Tính số tiền đã ứng (dùng giá trị từ form)
+    // Calculate the advanced amount (use value from the form)
     const advance = parseFloat(advanceAmount) || 0;
 
-    // Tính số ngày nghỉ trong tháng (chỉ tính đến hôm nay nếu là tháng hiện tại)
+    // Calculate number of days off in the month (only count up to today if it's the current month)
     const monthStart = new Date(year, month - 1, 1);
     monthStart.setHours(0, 0, 0, 0);
     const monthEnd = new Date(year, month, 0);
@@ -346,32 +346,31 @@ function ManagerDashboard({ user, setUser }) {
     todayStart.setHours(0, 0, 0, 0);
     const endDate = isCurrentMonth ? todayStart : monthEnd;
 
-    let leaveShifts = 0; // Tổng số ca nghỉ
+    let leaveShifts = 0; // Total number of off shifts
     (leaveRequests || []).forEach(req => {
       if (!req || req.status !== 'approved' || !req.date || req.userId !== employeeId) return;
-      
+
       const dateStr = req.date;
       const [reqYear, reqMonth, reqDay] = dateStr.split('-').map(Number);
       const leaveDate = new Date(reqYear, reqMonth - 1, reqDay);
       leaveDate.setHours(0, 0, 0, 0);
-      
-      // Chỉ tính các ngày nghỉ trong tháng được chọn và <= endDate
+
+      // Only count days off within the selected month and <= endDate
       if (leaveDate >= monthStart && leaveDate <= endDate) {
         const timePeriod = (req.timePeriod || 'all day').toLowerCase();
         if (timePeriod === 'all day') {
-          leaveShifts += 2; // Nghỉ cả ngày = 2 ca
-        } else if (timePeriod === 'morning' || timePeriod === 'afternoon' || 
-                   timePeriod === 'morning shift' || timePeriod === 'afternoon shift') {
-          leaveShifts += 1; // Nghỉ 1 ca = 1 ca
+          leaveShifts += 2; // Full day off = 2 shifts
+        } else if (timePeriod === 'morning' || timePeriod === 'afternoon' ||
+          timePeriod === 'morning shift' || timePeriod === 'afternoon shift') {
+          leaveShifts += 1; // One shift off = 1 shift
         }
       }
     });
-    
-    // Tính số ngày nghỉ: 2 ca = 1 ngày, 1 ca = 0.5 ngày
+
+    // Calculate number of days off: 2 shifts = 1 day, 1 shift = 0.5 days
     const leaveDays = leaveShifts / 2;
 
-    // Lương hiện tại = ((Tổng lương / Tổng ngày trong tháng) × Số ngày từ đầu tháng đến hôm nay) - Số tiền ứng - (Số ngày nghỉ × Lương 1 ngày)
-    const leaveDeduction = leaveDays * dailySalary;
+    // Current salary = ((Total salary / Total days in the month) × Number of days from the start of the month until today) - Advanced amount - (Number of days off × Daily wage)    const leaveDeduction = leaveDays * dailySalary;
     const currentSalary = (dailySalary * daysToCalculate) - advance - leaveDeduction;
 
     return Math.ceil(Math.max(0, currentSalary));
@@ -381,15 +380,15 @@ function ManagerDashboard({ user, setUser }) {
     try {
       const response = await api.get(`/users/${employee.id}/salary/${salaryMonth}`);
       const salary = response.data.salary || '';
-      
-      // Tính số tiền đã ứng trong tháng
+
+      // Calculate the advanced amount in the month
       let advanceAmount = 0;
       if (advanceRequests && Array.isArray(advanceRequests)) {
         const monthStart = new Date(salaryMonth + '-01');
         monthStart.setHours(0, 0, 0, 0);
         const monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0);
         monthEnd.setHours(23, 59, 59, 999);
-        
+
         advanceAmount = advanceRequests
           .filter(req => {
             if (!req || req.userId !== employee.id || req.status !== 'approved') {
@@ -401,7 +400,7 @@ function ManagerDashboard({ user, setUser }) {
           })
           .reduce((sum, req) => sum + (req.amount || 0), 0);
       }
-      
+
       setEditingSalary(employee);
       setSalaryForm({ salary, advanceAmount: advanceAmount || '' });
     } catch (err) {
@@ -416,31 +415,31 @@ function ManagerDashboard({ user, setUser }) {
     setLoading(true);
 
     if (!salaryForm.salary) {
-    setError("Month and salary are required"); // ✅ ALREADY FIXED
-    setLoading(false);
-    return;
+      setError("Month and salary are required"); // ALREADY FIXED
+      setLoading(false);
+      return;
     }
 
     try {
-      // Set lương
+      // Set salary
       await api.post(`/users/${editingSalary.id}/salary`, {
         month: salaryMonth,
         salary: parseFloat(salaryForm.salary)
       });
 
-      // Xử lý ứng lương
+      // Process salary advance
       const advanceAmount = parseFloat(salaryForm.advanceAmount) || 0;
-      
-      // Fetch advance requests mới nhất trước khi tính toán
+
+      // Fetch latest advance requests before calculation
       const latestAdvanceResponse = await api.get('/advance-requests');
       const latestAdvanceRequests = latestAdvanceResponse.data || [];
-      
-      // Tính số tiền đã ứng hiện tại trong tháng
+
+      // Calculate the current advanced amount in the month
       const monthStart = new Date(salaryMonth + '-01');
       monthStart.setHours(0, 0, 0, 0);
       const monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0);
       monthEnd.setHours(23, 59, 59, 999);
-      
+
       const currentAdvanceRequests = latestAdvanceRequests.filter(req => {
         if (!req || req.userId !== editingSalary.id || req.status !== 'approved') {
           return false;
@@ -449,12 +448,12 @@ function ManagerDashboard({ user, setUser }) {
         reqDate.setHours(0, 0, 0, 0);
         return reqDate >= monthStart && reqDate <= monthEnd;
       });
-      
+
       const currentAdvance = currentAdvanceRequests.reduce((sum, req) => sum + (req.amount || 0), 0);
 
-      // Nếu số tiền mới khác số tiền cũ
+      // If the new amount is different from the old amount
       if (Math.abs(advanceAmount - currentAdvance) > 0.01) {
-        // Xóa tất cả ứng lương cũ trong tháng
+        // Delete all old salary advances in the month
         for (const req of currentAdvanceRequests) {
           try {
             await api.delete(`/advance-requests/${req.id}`);
@@ -462,8 +461,8 @@ function ManagerDashboard({ user, setUser }) {
             console.error('Error deleting advance request:', err);
           }
         }
-        
-        // Tạo ứng lương mới nếu số tiền > 0
+
+        // Create a new salary advance if the amount > 0
         if (advanceAmount > 0) {
           await api.post('/advance-requests', {
             userId: editingSalary.id,
@@ -473,16 +472,16 @@ function ManagerDashboard({ user, setUser }) {
         }
       }
 
-      // Refresh data TRƯỚC KHI đóng form để đảm bảo state được cập nhật
+      // Refresh data BEFORE closing the form to ensure state is updated
       await fetchAdvanceRequests();
       await fetchEmployees();
-      
-      // Đợi một chút để đảm bảo state được cập nhật
+
+      // Wait a moment to ensure state is updated
       await new Promise(resolve => setTimeout(resolve, 100));
-      
+
       setEditingSalary(null);
       setSalaryForm({ salary: '', advanceAmount: '' });
-      
+
       alert('Salary setting successful!');
     } catch (err) {
       setError(err.response?.data?.error || 'Error');
@@ -544,7 +543,7 @@ function ManagerDashboard({ user, setUser }) {
           // For old format, check startTimePeriod and endTimePeriod
           const startPeriod = request.startTimePeriod || 'all day';
           const endPeriod = request.endTimePeriod || 'all day';
-          
+
           // If it's the start date, use startPeriod
           if (checkDate === startDate) {
             if (startPeriod === 'all day' || startPeriod === 'morning') {
@@ -595,26 +594,26 @@ function ManagerDashboard({ user, setUser }) {
   // Group employees by attendance status
   const getGroupedAttendance = () => {
     const statusList = getAttendanceStatus();
-    const presentFull = []; // Đi làm cả 2 ca
-    const presentMorning = []; // Đi làm ca sáng
-    const presentAfternoon = []; // Đi làm ca chiều
-    const absent = []; // Không đi làm
+    const presentFull = []; // Work both shifts
+    const presentMorning = []; // Work morning shift
+    const presentAfternoon = []; // Work afternoon shift
+    const absent = []; // Do not work
 
     statusList.forEach(emp => {
       const morningPresent = emp.morningStatus === 'working';
       const afternoonPresent = emp.afternoonStatus === 'working';
-      
+
       if (morningPresent && afternoonPresent) {
-        // Đi làm cả 2 ca
+        // Work both shifts
         presentFull.push(emp);
       } else if (morningPresent && !afternoonPresent) {
-        // Chỉ đi làm ca sáng
+        // Only work morning shift 
         presentMorning.push(emp);
       } else if (!morningPresent && afternoonPresent) {
-        // Chỉ đi làm ca chiều
+        // Only work afternoon shift
         presentAfternoon.push(emp);
       } else {
-        // Không đi làm cả 2 ca
+        // Do not work both shifts
         absent.push(emp);
       }
     });
@@ -627,7 +626,7 @@ function ManagerDashboard({ user, setUser }) {
     const [year, month] = monthlyAttendanceDate.split('-').map(Number);
     const daysInMonth = new Date(year, month, 0).getDate();
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-    
+
     return employees.map(employee => {
       const dailyStatus = days.map(day => {
         const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -638,7 +637,7 @@ function ManagerDashboard({ user, setUser }) {
           afternoon: leaveStatus.afternoon === 'working'
         };
       });
-      
+
       return {
         ...employee,
         dailyStatus
@@ -727,8 +726,8 @@ function ManagerDashboard({ user, setUser }) {
           <div className="dashboard-card">
             <div className="card-header">
               <h2>All leave requests</h2>
-              <button 
-                onClick={() => setShowCreateLeaveForm(!showCreateLeaveForm)} 
+              <button
+                onClick={() => setShowCreateLeaveForm(!showCreateLeaveForm)}
                 className="primary-button"
               >
                 {showCreateLeaveForm ? 'Cancel' : '+ Create leave requests for employees'}
@@ -739,7 +738,7 @@ function ManagerDashboard({ user, setUser }) {
               <form onSubmit={handleCreateLeaveRequest} className="leave-form" style={{ marginBottom: '20px' }}>
                 <h3 style={{ marginBottom: '15px' }}>Create leave requests for employees</h3>
                 {error && <div className="error-message">{error}</div>}
-                
+
                 <div className="form-group">
                   <label>Select employees</label>
                   <select
@@ -792,13 +791,13 @@ function ManagerDashboard({ user, setUser }) {
                   <button type="submit" disabled={loading} className="primary-button">
                     {loading ? 'Creating...' : 'Create a leave request'}
                   </button>
-                  <button 
+                  <button
                     type="button"
                     onClick={() => {
                       setShowCreateLeaveForm(false);
                       setCreateLeaveForm({ userId: '', date: '', timePeriod: 'all day', reason: '' });
                       setError('');
-                    }} 
+                    }}
                     className="logout-button"
                   >
                     Cancel
@@ -811,7 +810,7 @@ function ManagerDashboard({ user, setUser }) {
               <form onSubmit={handleUpdateLeaveRequest} className="leave-form" style={{ marginBottom: '20px' }}>
                 <h3 style={{ marginBottom: '15px' }}>Editing leave request: {editingLeaveRequest.userName}</h3>
                 {error && <div className="error-message">{error}</div>}
-                
+
                 <div className="form-row">
                   <div className="form-group">
                     <label>Day off</label>
@@ -850,13 +849,13 @@ function ManagerDashboard({ user, setUser }) {
                   <button type="submit" disabled={loading} className="primary-button">
                     {loading ? 'Updating' : 'Update'}
                   </button>
-                  <button 
+                  <button
                     type="button"
                     onClick={() => {
                       setEditingLeaveRequest(null);
                       setLeaveRequestForm({ date: '', timePeriod: 'all day', reason: '' });
                       setError('');
-                    }} 
+                    }}
                     className="logout-button"
                   >
                     Cancel
@@ -866,10 +865,10 @@ function ManagerDashboard({ user, setUser }) {
             )}
 
             {/* Filter */}
-            <div style={{ 
-              background: '#f9f9f9', 
-              padding: '20px', 
-              borderRadius: '8px', 
+            <div style={{
+              background: '#f9f9f9',
+              padding: '20px',
+              borderRadius: '8px',
               marginBottom: '20px',
               border: '1px solid #e0e0e0'
             }}>
@@ -925,24 +924,24 @@ function ManagerDashboard({ user, setUser }) {
 
             <div className="requests-list">
               {(() => {
-                // Lọc danh sách đơn nghỉ phép
+                // Filter the list of leave requests
                 let filteredRequests = leaveRequests;
-                
-                // Lọc theo nhân viên
+
+                // Filter by employee
                 if (leaveRequestFilters.employeeId) {
                   filteredRequests = filteredRequests.filter(
                     req => req.userId === parseInt(leaveRequestFilters.employeeId)
                   );
                 }
-                
-                // Lọc theo trạng thái
+
+                // Filter by status
                 if (leaveRequestFilters.status) {
                   filteredRequests = filteredRequests.filter(
                     req => req.status === leaveRequestFilters.status
                   );
                 }
-                
-                // Lọc theo tháng
+
+                // Filter by month
                 if (leaveRequestFilters.month) {
                   filteredRequests = filteredRequests.filter(req => {
                     const requestDate = req.date || req.startDate;
@@ -951,7 +950,7 @@ function ManagerDashboard({ user, setUser }) {
                     return requestMonth === leaveRequestFilters.month;
                   });
                 }
-                
+
                 return filteredRequests.length === 0 ? (
                   <p className="empty-message">No leave requests match the filter.</p>
                 ) : (
@@ -960,68 +959,68 @@ function ManagerDashboard({ user, setUser }) {
                       Display {filteredRequests.length} / {leaveRequests.length} leave request
                     </p>
                     {filteredRequests.map((request) => (
-                  <div key={request.id} className="request-card">
-                    <div className="request-header">
-                      <div>
-                        <h3>{request.userName}</h3>
-                        <p className="request-date">
-                          {request.date ? new Date(request.date).toLocaleDateString('vi-VN') : 
-                           request.startDate ? new Date(request.startDate).toLocaleDateString('vi-VN') : ''}
-                          {request.timePeriod && ` (${request.timePeriod})`}
-                          {request.startTimePeriod && !request.timePeriod && ` (${request.startTimePeriod})`}
-                          {request.endDate && request.startDate !== request.endDate && 
-                           ` - ${new Date(request.endDate).toLocaleDateString('vi-VN')}`}
-                          {request.endTimePeriod && request.startTimePeriod !== request.endTimePeriod && 
-                           !request.timePeriod && ` (${request.endTimePeriod})`}
-                        </p>
-                      </div>
-                      <span 
-                        className="status-badge"
-                        style={{ backgroundColor: getStatusColor(request.status) }}
-                      >
-                        {getStatusText(request.status)}
-                      </span>
-                    </div>
-                    <p className="request-reason">{request.reason}</p>
-                    <div className="request-footer">
-                      <span className="request-time">
-                        Gửi lúc: {new Date(request.submittedAt).toLocaleString('vi-VN')}
-                      </span>
-                      <div className="action-buttons">
-                        <button
-                          onClick={() => handleEditLeaveRequest(request)}
-                          className="edit-button"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteLeaveRequest(request.id)}
-                          className="delete-button"
-                        >
-                          Delete
-                        </button>
-                        {request.status !== 'approved' && (
-                          <button
-                            onClick={() => handleStatusChange(request.id, 'approved')}
-                            className="approve-button"
+                      <div key={request.id} className="request-card">
+                        <div className="request-header">
+                          <div>
+                            <h3>{request.userName}</h3>
+                            <p className="request-date">
+                              {request.date ? new Date(request.date).toLocaleDateString('vi-VN') :
+                                request.startDate ? new Date(request.startDate).toLocaleDateString('vi-VN') : ''}
+                              {request.timePeriod && ` (${request.timePeriod})`}
+                              {request.startTimePeriod && !request.timePeriod && ` (${request.startTimePeriod})`}
+                              {request.endDate && request.startDate !== request.endDate &&
+                                ` - ${new Date(request.endDate).toLocaleDateString('vi-VN')}`}
+                              {request.endTimePeriod && request.startTimePeriod !== request.endTimePeriod &&
+                                !request.timePeriod && ` (${request.endTimePeriod})`}
+                            </p>
+                          </div>
+                          <span
+                            className="status-badge"
+                            style={{ backgroundColor: getStatusColor(request.status) }}
                           >
-                            Approve
-                          </button>
-                        )}
-                        {request.status !== 'rejected' && (
-                          <button
-                            onClick={() => handleStatusChange(request.id, 'rejected')}
-                            className="reject-button"
-                          >
-                            Reject
-                          </button>
-                        )}
+                            {getStatusText(request.status)}
+                          </span>
+                        </div>
+                        <p className="request-reason">{request.reason}</p>
+                        <div className="request-footer">
+                          <span className="request-time">
+                            Gửi lúc: {new Date(request.submittedAt).toLocaleString('vi-VN')}
+                          </span>
+                          <div className="action-buttons">
+                            <button
+                              onClick={() => handleEditLeaveRequest(request)}
+                              className="edit-button"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeleteLeaveRequest(request.id)}
+                              className="delete-button"
+                            >
+                              Delete
+                            </button>
+                            {request.status !== 'approved' && (
+                              <button
+                                onClick={() => handleStatusChange(request.id, 'approved')}
+                                className="approve-button"
+                              >
+                                Approve
+                              </button>
+                            )}
+                            {request.status !== 'rejected' && (
+                              <button
+                                onClick={() => handleStatusChange(request.id, 'rejected')}
+                                className="reject-button"
+                              >
+                                Reject
+                              </button>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
                     ))
-                  }
-                </>
+                    }
+                  </>
                 );
               })()}
             </div>
@@ -1033,7 +1032,7 @@ function ManagerDashboard({ user, setUser }) {
             <div className="card-header">
               <h2>Employee list</h2>
               <div style={{ display: 'flex', gap: '10px' }}>
-                <button 
+                <button
                   onClick={async () => {
                     try {
                       const response = await api.post('/users/bulk-setup');
@@ -1042,7 +1041,7 @@ function ManagerDashboard({ user, setUser }) {
                     } catch (err) {
                       alert(err.response?.data?.error || 'Error');
                     }
-                  }} 
+                  }}
                   className="primary-button"
                   style={{ background: '#4caf50' }}
                 >
@@ -1057,7 +1056,7 @@ function ManagerDashboard({ user, setUser }) {
             {showEmployeeForm && (
               <form onSubmit={handleCreateEmployee} className="employee-form">
                 {error && <div className="error-message">{error}</div>}
-                
+
                 <div className="form-row">
                   <div className="form-group">
                     <label>Username</label>
@@ -1102,7 +1101,7 @@ function ManagerDashboard({ user, setUser }) {
               <form onSubmit={handleUpdateEmployee} className="employee-form" style={{ marginTop: '20px' }}>
                 <h3 style={{ marginBottom: '15px' }}>Edit employee: {editingEmployee.name}</h3>
                 {error && <div className="error-message">{error}</div>}
-                
+
                 <div className="form-row">
                   <div className="form-group">
                     <label>Full name</label>
@@ -1130,13 +1129,13 @@ function ManagerDashboard({ user, setUser }) {
                   <button type="submit" disabled={loading} className="primary-button">
                     {loading ? 'Updating...' : 'Update'}
                   </button>
-                  <button 
+                  <button
                     type="button"
                     onClick={() => {
                       setEditingEmployee(null);
                       setEditForm({ name: '', username: '' });
                       setError('');
-                    }} 
+                    }}
                     className="logout-button"
                   >
                     Cancel
@@ -1208,7 +1207,7 @@ function ManagerDashboard({ user, setUser }) {
                 />
               </div>
             </div>
-            
+
             {employees.length > 0 && (() => {
               const stats = getAttendanceStats();
               return (
@@ -1321,7 +1320,7 @@ function ManagerDashboard({ user, setUser }) {
                 />
               </div>
             </div>
-            
+
             <div className="monthly-attendance-container">
               {employees.length === 0 ? (
                 <p className="empty-message">No staff yet.</p>
@@ -1384,7 +1383,7 @@ function ManagerDashboard({ user, setUser }) {
               <form onSubmit={handleSetSalary} className="leave-form" style={{ marginBottom: '20px' }}>
                 <h3 style={{ marginBottom: '15px' }}>Set salary for {editingSalary.name} - {new Date(salaryMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h3>
                 {error && <div className="error-message">{error}</div>}
-                
+
                 <div className="form-row">
                   <div className="form-group">
                     <label>Total salary (VNĐ)</label>
@@ -1412,23 +1411,23 @@ function ManagerDashboard({ user, setUser }) {
                 </div>
 
                 {salaryForm.salary && editingSalary && (
-                  <div style={{ 
-                    padding: '12px', 
-                    background: '#e3f2fd', 
-                    borderRadius: '8px', 
+                  <div style={{
+                    padding: '12px',
+                    background: '#e3f2fd',
+                    borderRadius: '8px',
                     marginBottom: '15px',
                     border: '1px solid #2196F3'
                   }}>
                     <strong>Net advance balance: </strong>
-                    <span style={{ 
-                      color: '#2196F3', 
+                    <span style={{
+                      color: '#2196F3',
                       fontWeight: '600',
                       fontSize: '16px'
                     }}>
                       {new Intl.NumberFormat('vi-VN').format(
                         calculateRemainingSalaryForForm(
-                          editingSalary.id, 
-                          parseFloat(salaryForm.salary) || 0, 
+                          editingSalary.id,
+                          parseFloat(salaryForm.salary) || 0,
                           salaryForm.advanceAmount || 0
                         )
                       )} VNĐ
@@ -1440,13 +1439,13 @@ function ManagerDashboard({ user, setUser }) {
                   <button type="submit" disabled={loading} className="primary-button">
                     {loading ? 'Saving...' : 'Save'}
                   </button>
-                  <button 
+                  <button
                     type="button"
                     onClick={() => {
                       setEditingSalary(null);
                       setSalaryForm({ salary: '', advanceAmount: '' });
                       setError('');
-                    }} 
+                    }}
                     className="logout-button"
                   >
                     Cancel
@@ -1455,10 +1454,10 @@ function ManagerDashboard({ user, setUser }) {
               </form>
             )}
 
-            <SalaryTable 
+            <SalaryTable
               key={`salary-${salaryMonth}-${Array.isArray(advanceRequests) ? advanceRequests.length : 0}-${Array.isArray(advanceRequests) ? advanceRequests.reduce((sum, r) => sum + (r?.id || 0), 0) : 0}`}
-              employees={employees} 
-              salaryMonth={salaryMonth} 
+              employees={employees}
+              salaryMonth={salaryMonth}
               onEditSalary={handleEditSalary}
               advanceRequests={advanceRequests}
               leaveRequests={leaveRequests}
@@ -1470,12 +1469,12 @@ function ManagerDashboard({ user, setUser }) {
           <div className="dashboard-card">
             <div className="card-header">
               <h2>Payroll management</h2>
-              <button 
+              <button
                 onClick={() => {
                   setShowAdvanceForm(!showAdvanceForm);
                   setEditingAdvanceRequest(null);
                   setAdvanceForm({ userId: '', amount: '', reason: '' });
-                }} 
+                }}
                 className="primary-button"
               >
                 {showAdvanceForm ? 'Cancel' : '+ Create salary advance'}
@@ -1486,7 +1485,7 @@ function ManagerDashboard({ user, setUser }) {
               <form onSubmit={handleCreateAdvance} className="leave-form" style={{ marginBottom: '20px' }}>
                 <h3 style={{ marginBottom: '15px' }}>Create salary advances for employees.</h3>
                 {error && <div className="error-message">{error}</div>}
-                
+
                 <div className="form-group">
                   <label>Choose employee</label>
                   <select
@@ -1528,13 +1527,13 @@ function ManagerDashboard({ user, setUser }) {
                   <button type="submit" disabled={loading} className="primary-button">
                     {loading ? 'Creating...' : 'Create salary advance'}
                   </button>
-                  <button 
+                  <button
                     type="button"
                     onClick={() => {
                       setShowAdvanceForm(false);
                       setAdvanceForm({ userId: '', amount: '', reason: '' });
                       setError('');
-                    }} 
+                    }}
                     className="logout-button"
                   >
                     Cancel
@@ -1547,7 +1546,7 @@ function ManagerDashboard({ user, setUser }) {
               <form onSubmit={handleUpdateAdvanceRequest} className="leave-form" style={{ marginBottom: '20px' }}>
                 <h3 style={{ marginBottom: '15px' }}>Adjust salary: {editingAdvanceRequest.userName}</h3>
                 {error && <div className="error-message">{error}</div>}
-                
+
                 <div className="form-group">
                   <label>Choose employee</label>
                   <select
@@ -1589,13 +1588,13 @@ function ManagerDashboard({ user, setUser }) {
                   <button type="submit" disabled={loading} className="primary-button">
                     {loading ? 'Updating...' : 'Update'}
                   </button>
-                  <button 
+                  <button
                     type="button"
                     onClick={() => {
                       setEditingAdvanceRequest(null);
                       setAdvanceForm({ userId: '', amount: '', reason: '' });
                       setError('');
-                    }} 
+                    }}
                     className="logout-button"
                   >
                     Cancel
@@ -1604,11 +1603,11 @@ function ManagerDashboard({ user, setUser }) {
               </form>
             )}
 
-            {/* Bộ lọc */}
-            <div style={{ 
-              background: '#f9f9f9', 
-              padding: '20px', 
-              borderRadius: '8px', 
+            {/* Filter */}
+            <div style={{
+              background: '#f9f9f9',
+              padding: '20px',
+              borderRadius: '8px',
               marginBottom: '20px',
               marginTop: '20px',
               border: '1px solid #e0e0e0'
@@ -1644,16 +1643,16 @@ function ManagerDashboard({ user, setUser }) {
             <div style={{ marginTop: '20px' }}>
               <h3 style={{ marginBottom: '15px', fontSize: '18px' }}>Salary advance history</h3>
               {(() => {
-                // Lọc danh sách ứng lương
+                // Filter salary advance list
                 let filteredRequests = advanceRequests;
-                
-                // Lọc theo nhân viên
+
+                // Filter by employee
                 if (advanceRequestFilter.employeeId) {
                   filteredRequests = filteredRequests.filter(
                     req => req.userId === parseInt(advanceRequestFilter.employeeId)
                   );
                 }
-                
+
                 return filteredRequests.length === 0 ? (
                   <p className="empty-message">No salary advance requests match the filter.</p>
                 ) : (
@@ -1676,61 +1675,61 @@ function ManagerDashboard({ user, setUser }) {
                         {filteredRequests
                           .sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt))
                           .map((request) => (
-                        <tr key={request.id}>
-                          <td>{new Date(request.submittedAt).toLocaleString('vi-VN')}</td>
-                          <td>{request.userName}</td>
-                          <td style={{ fontWeight: '600', color: '#2563eb' }}>
-                            {new Intl.NumberFormat('vi-VN').format(request.amount)} VNĐ
-                          </td>
-                          <td>{request.reason}</td>
-                          <td>
-                            <span 
-                              className="status-badge"
-                              style={{ 
-                                backgroundColor: getStatusColor(request.status),
-                                padding: '4px 12px',
-                                borderRadius: '4px',
-                                fontSize: '12px',
-                                color: 'white'
-                              }}
-                            >
-                              {getStatusText(request.status)}
-                            </span>
-                          </td>
-                          <td>
-                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                              <button
-                                onClick={() => handleEditAdvanceRequest(request)}
-                                className="edit-button"
-                              >
-                                edit
-                              </button>
-                              <button
-                                onClick={() => handleDeleteAdvanceRequest(request.id)}
-                                className="delete-button"
-                              >
-                                Delete
-                              </button>
-                              {request.status !== 'approved' && (
-                                <button
-                                  onClick={() => handleAdvanceStatusChange(request.id, 'approved')}
-                                  className="approve-button"
+                            <tr key={request.id}>
+                              <td>{new Date(request.submittedAt).toLocaleString('vi-VN')}</td>
+                              <td>{request.userName}</td>
+                              <td style={{ fontWeight: '600', color: '#2563eb' }}>
+                                {new Intl.NumberFormat('vi-VN').format(request.amount)} VNĐ
+                              </td>
+                              <td>{request.reason}</td>
+                              <td>
+                                <span
+                                  className="status-badge"
+                                  style={{
+                                    backgroundColor: getStatusColor(request.status),
+                                    padding: '4px 12px',
+                                    borderRadius: '4px',
+                                    fontSize: '12px',
+                                    color: 'white'
+                                  }}
                                 >
-                                  Approve
-                                </button>
-                              )}
-                              {request.status !== 'rejected' && (
-                                <button
-                                  onClick={() => handleAdvanceStatusChange(request.id, 'rejected')}
-                                  className="reject-button"
-                                >
-                                  Refuse
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                        ))}
+                                  {getStatusText(request.status)}
+                                </span>
+                              </td>
+                              <td>
+                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                  <button
+                                    onClick={() => handleEditAdvanceRequest(request)}
+                                    className="edit-button"
+                                  >
+                                    edit
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteAdvanceRequest(request.id)}
+                                    className="delete-button"
+                                  >
+                                    Delete
+                                  </button>
+                                  {request.status !== 'approved' && (
+                                    <button
+                                      onClick={() => handleAdvanceStatusChange(request.id, 'approved')}
+                                      className="approve-button"
+                                    >
+                                      Approve
+                                    </button>
+                                  )}
+                                  {request.status !== 'rejected' && (
+                                    <button
+                                      onClick={() => handleAdvanceStatusChange(request.id, 'rejected')}
+                                      className="reject-button"
+                                    >
+                                      Refuse
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
                       </tbody>
                       <tfoot>
                         <tr style={{ background: '#f9f9f9', fontWeight: 'bold' }}>
@@ -1784,17 +1783,17 @@ function SalaryTable({ employees, salaryMonth, onEditSalary, advanceRequests = [
     }
   }, [employees, salaryMonth, advanceRequests]);
 
-  // Tính số tiền đã ứng cho mỗi nhân viên trong tháng
+  // Calculate the advanced amount for each employee in the month
   const getAdvanceAmount = (employeeId) => {
     if (!advanceRequests || !Array.isArray(advanceRequests)) {
       return 0;
     }
-    
+
     const monthStart = new Date(salaryMonth + '-01');
     monthStart.setHours(0, 0, 0, 0);
     const monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0);
     monthEnd.setHours(23, 59, 59, 999);
-    
+
     return advanceRequests
       .filter(req => {
         if (!req || req.userId !== employeeId || req.status !== 'approved') {
@@ -1807,7 +1806,7 @@ function SalaryTable({ employees, salaryMonth, onEditSalary, advanceRequests = [
       .reduce((sum, req) => sum + (req.amount || 0), 0);
   };
 
-  // Tính số tiền thực còn (giống công thức tính lương hiện tại của nhân viên)
+  // Calculate actual remaining amount (same formula as employee's current salary calculation)
   const calculateRemainingSalary = (employeeId, totalSalary) => {
     if (!totalSalary || totalSalary <= 0) {
       return 0;
@@ -1817,18 +1816,18 @@ function SalaryTable({ employees, salaryMonth, onEditSalary, advanceRequests = [
     const [year, month] = salaryMonth.split('-').map(Number);
     const daysInMonth = new Date(year, month, 0).getDate();
     const currentDay = today.getDate();
-    
-    // Kiểm tra xem tháng được chọn có phải tháng hiện tại không
+
+    // Check if the selected month is the current month
     const isCurrentMonth = year === today.getFullYear() && month === today.getMonth() + 1;
     const daysToCalculate = isCurrentMonth ? currentDay : daysInMonth;
 
-    // Lương 1 ngày = Tổng lương / Tổng ngày trong tháng
+    // Daily wage = Total salary / Total days in the month
     const dailySalary = totalSalary / daysInMonth;
 
-    // Tính số tiền đã ứng trong tháng
+    // Calculate the advanced amount in the month
     const advanceAmount = getAdvanceAmount(employeeId);
 
-    // Tính số ngày nghỉ trong tháng (chỉ tính đến hôm nay nếu là tháng hiện tại)
+    // Calculate number of days off in the month (only count up to today if it's the current month)
     const monthStart = new Date(year, month - 1, 1);
     monthStart.setHours(0, 0, 0, 0);
     const monthEnd = new Date(year, month, 0);
@@ -1837,31 +1836,31 @@ function SalaryTable({ employees, salaryMonth, onEditSalary, advanceRequests = [
     todayStart.setHours(0, 0, 0, 0);
     const endDate = isCurrentMonth ? todayStart : monthEnd;
 
-    let leaveShifts = 0; // Tổng số ca nghỉ
+    let leaveShifts = 0; // Total number of off shifts
     (leaveRequests || []).forEach(req => {
       if (!req || req.status !== 'approved' || !req.date || req.userId !== employeeId) return;
-      
+
       const dateStr = req.date;
       const [reqYear, reqMonth, reqDay] = dateStr.split('-').map(Number);
       const leaveDate = new Date(reqYear, reqMonth - 1, reqDay);
       leaveDate.setHours(0, 0, 0, 0);
-      
-      // Chỉ tính các ngày nghỉ trong tháng được chọn và <= endDate
+
+      // Only count days off within the selected month and <= endDate
       if (leaveDate >= monthStart && leaveDate <= endDate) {
         const timePeriod = (req.timePeriod || 'all day').toLowerCase();
         if (timePeriod === 'all day') {
-          leaveShifts += 2; // Nghỉ cả ngày = 2 ca
-        } else if (timePeriod === 'morning' || timePeriod === 'afternoon' || 
-                   timePeriod === 'morning shift' || timePeriod === 'afternoon shift') {
-          leaveShifts += 1; // Nghỉ 1 ca = 1 ca
+          leaveShifts += 2; // Full day off = 2 shifts
+        } else if (timePeriod === 'morning' || timePeriod === 'afternoon' ||
+          timePeriod === 'morning shift' || timePeriod === 'afternoon shift') {
+          leaveShifts += 1; // 1 shift off = 1 shift
         }
       }
     });
-    
-    // Tính số ngày nghỉ: 2 ca = 1 ngày, 1 ca = 0.5 ngày
+
+    // Calculate days off: 2 shifts = 1 day, 1 shift = 0.5 days
     const leaveDays = leaveShifts / 2;
 
-    // Lương hiện tại = ((Tổng lương / Tổng ngày trong tháng) × Số ngày từ đầu tháng đến hôm nay) - Số tiền ứng - (Số ngày nghỉ × Lương 1 ngày)
+    // Current salary = ((Total salary / Total days in the month) × Number of days from the start of the month until today) - Advanced amount - (Days off × Daily wage)
     const leaveDeduction = leaveDays * dailySalary;
     const currentSalary = (dailySalary * daysToCalculate) - advanceAmount - leaveDeduction;
 
@@ -1893,7 +1892,7 @@ function SalaryTable({ employees, salaryMonth, onEditSalary, advanceRequests = [
           const salary = salaries[employee.id] || 0;
           const advanceAmount = getAdvanceAmount(employee.id);
           const remaining = calculateRemainingSalary(employee.id, salary);
-          
+
           return (
             <tr key={employee.id}>
               <td>{employee.name}</td>
@@ -1913,9 +1912,9 @@ function SalaryTable({ employees, salaryMonth, onEditSalary, advanceRequests = [
                 </span>
               </td>
               <td>
-                <span style={{ 
-                  color: remaining >= 0 ? '#2196F3' : '#f44336', 
-                  fontWeight: '600' 
+                <span style={{
+                  color: remaining >= 0 ? '#2196F3' : '#f44336',
+                  fontWeight: '600'
                 }}>
                   {new Intl.NumberFormat('vi-VN').format(remaining)} VNĐ
                 </span>
