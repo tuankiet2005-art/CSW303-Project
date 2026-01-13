@@ -166,8 +166,8 @@ app.post('/api/users/bulk-setup', authenticateToken, isManager, (req, res) => {
   const db = readDB();
 
   // Remove employee named "Vũ" or username contains "vu"
-  const vuIndex = db.users.findIndex(u => 
-    u.role === 'employee' && 
+  const vuIndex = db.users.findIndex(u =>
+    u.role === 'employee' &&
     (u.name.toLowerCase().includes('vũ') || u.username.toLowerCase().includes('vu'))
   );
   if (vuIndex !== -1) {
@@ -315,7 +315,7 @@ app.patch('/api/users/:id/reset-password', authenticateToken, isManager, (req, r
 
   // If newPassword is provided, use it; otherwise use default
   const password = newPassword || '123456';
-  
+
   if (password.length < 6) {
     return res.status(400).json({ error: 'MThe new password must have at least 6 characters.' });
   }
@@ -323,7 +323,7 @@ app.patch('/api/users/:id/reset-password', authenticateToken, isManager, (req, r
   db.users[userIndex].password = bcrypt.hashSync(password, 10);
   writeDB(db);
 
-  res.json({ 
+  res.json({
     message: 'Password changed successfully.',
     defaultPassword: password
   });
@@ -343,9 +343,9 @@ app.get('/api/users/me/salary/:month', authenticateToken, (req, res) => {
 
     console.log(`[Salary API] User ID: ${userId}, Month: ${month}`);
     console.log(`[Salary API] User salaries:`, user.salaries);
-    
+
     const salary = user.salaries && user.salaries[month] ? user.salaries[month] : null;
-    
+
     console.log(`[Salary API] Found salary:`, salary);
 
     res.json({ month, salary });
@@ -451,11 +451,11 @@ app.post('/api/leave-requests', authenticateToken, (req, res) => {
     }
 
     const db = readDB();
-    
+
     // Nếu là quản lý và có userId trong body, cho phép tạo đơn cho nhân viên khác
     let targetUserId = req.user.id;
     let targetUser = db.users.find(u => u.id === req.user.id);
-    
+
     if (req.user.role === 'manager' && userId) {
       // Quản lý có thể tạo đơn cho nhân viên khác
       const targetEmployee = db.users.find(u => u.id === parseInt(userId) && u.role === 'employee');
@@ -473,10 +473,10 @@ app.post('/api/leave-requests', authenticateToken, (req, res) => {
       date,
       timePeriod: timePeriod || 'all day',
       reason: reason || '',
-      status: 'approved', // Mặc định được duyệt
+      status: 'approved', // Approved by default
       submittedAt: new Date().toISOString(),
-      canEdit: false, // Nhân viên không thể sửa
-      createdByManager: req.user.role === 'manager' && userId ? true : false // Đánh dấu đơn do quản lý tạo
+      canEdit: false, // Employees cannot edit
+      createdByManager: req.user.role === 'manager' && userId ? true : false // Mark orders created by manager
     };
 
     db.leaveRequests.push(newRequest);
@@ -493,20 +493,20 @@ app.post('/api/leave-requests', authenticateToken, (req, res) => {
   const db = readDB();
   const user = db.users.find(u => u.id === req.user.id);
 
-    const newRequest = {
-      id: db.leaveRequests.length > 0 ? Math.max(...db.leaveRequests.map(r => r.id)) + 1 : 1,
-      userId: req.user.id,
-      userName: user.name,
-      startDate,
-      endDate,
-      startTimePeriod: startTimePeriod || 'all day',
-      endTimePeriod: endTimePeriod || 'all day',
-      reason: reason || '',
-      type: type || 'on leave',
-      status: 'approved', // Mặc định được duyệt
-      submittedAt: new Date().toISOString(),
-      canEdit: false // Nhân viên không thể sửa
-    };
+  const newRequest = {
+    id: db.leaveRequests.length > 0 ? Math.max(...db.leaveRequests.map(r => r.id)) + 1 : 1,
+    userId: req.user.id,
+    userName: user.name,
+    startDate,
+    endDate,
+    startTimePeriod: startTimePeriod || 'all day',
+    endTimePeriod: endTimePeriod || 'all day',
+    reason: reason || '',
+    type: type || 'on leave',
+    status: 'approved', // Approved by default
+    submittedAt: new Date().toISOString(),
+    canEdit: false // Employees cannot edit
+  };
 
   db.leaveRequests.push(newRequest);
   writeDB(db);
@@ -558,7 +558,7 @@ app.put('/api/leave-requests/:id', authenticateToken, (req, res) => {
     return res.status(404).json({ error: 'No leave request found.' });
   }
 
-  // Chỉ quản lý mới có quyền sửa
+  // Only managers have edit permission
   if (req.user.role !== 'manager') {
     return res.status(403).json({ error: 'Only managers have the authority to edit leave requests.' });
   }
@@ -626,7 +626,7 @@ app.delete('/api/leave-requests/:id', authenticateToken, (req, res) => {
     return res.status(404).json({ error: 'No leave request found.' });
   }
 
-  // Chỉ quản lý mới có quyền xóa
+  // Only managers have delete permission
   if (req.user.role !== 'manager') {
     return res.status(403).json({ error: 'Only managers have the authority to edit leave requests.' });
   }
@@ -655,12 +655,12 @@ app.post('/api/advance-requests', authenticateToken, (req, res) => {
     }
 
     const db = readDB();
-    
-    // Đảm bảo advanceRequests luôn là array
+
+    // Ensure advanceRequests is always an array
     if (!db.advanceRequests || !Array.isArray(db.advanceRequests)) {
       db.advanceRequests = [];
     }
-    
+
     let targetUserId;
     let targetUser;
 
@@ -684,7 +684,7 @@ app.post('/api/advance-requests', authenticateToken, (req, res) => {
       }
     }
 
-    // Tính ID mới an toàn
+    // Calculate a new ID safely
     let newId = 1;
     if (db.advanceRequests.length > 0) {
       const validIds = db.advanceRequests
@@ -719,13 +719,13 @@ app.post('/api/advance-requests', authenticateToken, (req, res) => {
 app.get('/api/advance-requests', authenticateToken, (req, res) => {
   try {
     const db = readDB();
-    
-    // Đảm bảo advanceRequests luôn là array
+
+    // Ensure advanceRequests is always an array
     if (!db.advanceRequests || !Array.isArray(db.advanceRequests)) {
       db.advanceRequests = [];
       writeDB(db);
     }
-    
+
     let requests;
 
     if (req.user.role === 'manager') {
@@ -754,14 +754,14 @@ app.patch('/api/advance-requests/:id/status', authenticateToken, isManager, (req
     }
 
     const db = readDB();
-    
-    // Đảm bảo advanceRequests luôn là array
+
+    // Ensure advanceRequests is always an array
     if (!db.advanceRequests || !Array.isArray(db.advanceRequests)) {
       db.advanceRequests = [];
       writeDB(db);
       return res.status(404).json({ error: 'No salary advance requests found.' });
     }
-    
+
     const requestIndex = db.advanceRequests.findIndex(r => r && r.id === requestId);
 
     if (requestIndex === -1) {
@@ -794,14 +794,14 @@ app.put('/api/advance-requests/:id', authenticateToken, isManager, (req, res) =>
     }
 
     const db = readDB();
-    
-    // Đảm bảo advanceRequests luôn là array
+
+    // Ensure advanceRequests is always an array
     if (!db.advanceRequests || !Array.isArray(db.advanceRequests)) {
       db.advanceRequests = [];
       writeDB(db);
       return res.status(404).json({ error: 'No salary advance requests found.' });
     }
-    
+
     const requestIndex = db.advanceRequests.findIndex(r => r && r.id === requestId);
 
     if (requestIndex === -1) {
@@ -824,14 +824,14 @@ app.delete('/api/advance-requests/:id', authenticateToken, isManager, (req, res)
   try {
     const requestId = parseInt(req.params.id);
     const db = readDB();
-    
-    // Đảm bảo advanceRequests luôn là array
+
+    // Ensure advanceRequests is always an array
     if (!db.advanceRequests || !Array.isArray(db.advanceRequests)) {
       db.advanceRequests = [];
       writeDB(db);
       return res.status(404).json({ error: 'No salary advance requests found.' });
     }
-    
+
     const requestIndex = db.advanceRequests.findIndex(r => r && r.id === requestId);
 
     if (requestIndex === -1) {
