@@ -1245,7 +1245,7 @@ function ManagerDashboard({ user, setUser }) {
                 return (
                   <div className="attendance-four-columns">
                     <div className="attendance-column present-full-column">
-                      <h3 className="column-title">Đi làm</h3>
+                      <h3 className="column-title">Present</h3>
                       <div className="employee-name-list">
                         {presentFull.length === 0 ? (
                           <p className="empty-column">Do not have</p>
@@ -1365,7 +1365,7 @@ function ManagerDashboard({ user, setUser }) {
             <div className="card-header">
               <h2>Payroll Management</h2>
               <div className="attendance-date-picker">
-                <label>Seleect month: </label>
+                <label> Select month: </label>
                 <input
                   type="month"
                   value={salaryMonth}
