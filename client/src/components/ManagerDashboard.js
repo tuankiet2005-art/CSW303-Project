@@ -917,7 +917,7 @@ function ManagerDashboard({ user, setUser }) {
                     className="logout-button"
                     style={{ width: '100%' }}
                   >
-                    Remove filter
+                    Clear filter
                   </button>
                 </div>
               </div>
@@ -985,7 +985,7 @@ function ManagerDashboard({ user, setUser }) {
                     <p className="request-reason">{request.reason}</p>
                     <div className="request-footer">
                       <span className="request-time">
-                        Gửi lúc: {new Date(request.submittedAt).toLocaleString('vi-VN')}
+                        Created at: {new Date(request.submittedAt).toLocaleString('vi-VN')}
                       </span>
                       <div className="action-buttons">
                         <button
@@ -1072,7 +1072,7 @@ function ManagerDashboard({ user, setUser }) {
                   <div className="form-group">
                     <label>Password</label>
                     <input
-                      type="password"
+                      type="text"
                       value={employeeForm.password}
                       onChange={(e) => setEmployeeForm({ ...employeeForm, password: e.target.value })}
                       required
@@ -1181,7 +1181,7 @@ function ManagerDashboard({ user, setUser }) {
                               onClick={() => handleDeleteEmployee(employee.id)}
                               className="delete-button"
                             >
-                              Deleting
+                              Delete
                             </button>
                           </div>
                         </td>
@@ -1245,7 +1245,7 @@ function ManagerDashboard({ user, setUser }) {
                 return (
                   <div className="attendance-four-columns">
                     <div className="attendance-column present-full-column">
-                      <h3 className="column-title">Đi làm</h3>
+                      <h3 className="column-title">Working</h3>
                       <div className="employee-name-list">
                         {presentFull.length === 0 ? (
                           <p className="empty-column">Do not have</p>
@@ -1365,7 +1365,7 @@ function ManagerDashboard({ user, setUser }) {
             <div className="card-header">
               <h2>Payroll Management</h2>
               <div className="attendance-date-picker">
-                <label>Seleect month: </label>
+                <label>Select month: </label>
                 <input
                   type="month"
                   value={salaryMonth}
@@ -1635,7 +1635,7 @@ function ManagerDashboard({ user, setUser }) {
                     className="logout-button"
                     style={{ width: '100%' }}
                   >
-                    Delete filter
+                    Clear filter
                   </button>
                 </div>
               </div>
