@@ -232,9 +232,9 @@ function EmployeeDashboard({ user, setUser }) {
 
   const getStatusText = (status) => {
     switch (status) {
-      case 'approved': return 'Approve';
-      case 'rejected': return 'Rejecte';
-      default: return 'Chờ duyệt';
+      case 'approved': return 'Approved';
+      case 'rejected': return 'Rejected';
+      default: return 'Waiting for approval';
     }
   };
 
@@ -381,7 +381,7 @@ function EmployeeDashboard({ user, setUser }) {
               </div>
 
               <div className="form-group">
-                <label>Confrim new password</label>
+                <label>Confirm new password</label>
                 <input
                   type="password"
                   value={passwordForm.confirmPassword}
@@ -427,9 +427,9 @@ function EmployeeDashboard({ user, setUser }) {
                     onChange={(e) => setFormData({ ...formData, timePeriod: e.target.value })}
                     required
                   >
-                    <option value="all day">Cả ngày</option>
-                    <option value="morning">Sáng</option>
-                    <option value="afternoon">Chiều</option>
+                    <option value="all day">All day</option>
+                    <option value="morning">Morning</option>
+                    <option value="afternoon">Afternoon</option>
                   </select>
                 </div>
               </div>
