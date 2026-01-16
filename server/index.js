@@ -161,38 +161,17 @@ app.post('/api/users', authenticateToken, isManager, (req, res) => {
   });
 });
 
-// Bulk create employees and remove Vũ (Manager only)
 app.post('/api/users/bulk-setup', authenticateToken, isManager, (req, res) => {
   const db = readDB();
 
-  // Remove employee named "Vũ" or username contains "vu"
-  const vuIndex = db.users.findIndex(u => 
-    u.role === 'employee' && 
-    (u.name.toLowerCase().includes('vũ') || u.username.toLowerCase().includes('vu'))
-  );
-  if (vuIndex !== -1) {
-    db.users.splice(vuIndex, 1);
-  }
-
   // List of employees to add
   const employeeList = [
-    { name: 'A.NĂM', username: 'anam' },
-    { name: 'TIẾN', username: 'tien' },
-    { name: 'HIỆP', username: 'hiep' },
-    { name: 'CHƯƠNG', username: 'chuong' },
-    { name: 'PHƯỚC', username: 'phuoc' },
-    { name: 'GIANG', username: 'giang' },
-    { name: 'HÒA', username: 'hoa' },
-    { name: 'DUY', username: 'duy' },
-    { name: 'THƯƠNG', username: 'thuong' },
-    { name: 'ANH THÁI', username: 'anhthai' },
-    { name: 'C.HƯỜNG', username: 'chuongc' },
-    { name: 'TÚ', username: 'tu' },
-    { name: 'LUẬT', username: 'luat' },
-    { name: 'C.NHIỄM', username: 'cnhiem' },
-    { name: 'VY', username: 'vy' },
-    { name: 'THẾ ANH', username: 'theanh' },
-    { name: 'HẬU', username: 'hau' }
+    { name: 'Phạm Quan Kha', username: 'kha.pham.emp' },
+    { name: 'Nguyễn Hoàng Sơn', username: 'son.nguyen.emp' },
+    { name: 'Đoàn Tuấn Kiệt', username: 'kiet.doan.emp' },
+    { name: 'Lương Minh Huy', username: 'huy.luong.emp' },
+    { name: 'Trịnh Bảo Khang', username: 'khang.trinh.emp' },
+    { name: 'Nguyễn Bá Hùng', username: 'hung.nguyen.emp' }
   ];
 
   let maxId = db.users.length > 0 ? Math.max(...db.users.map(u => u.id)) : 0;
@@ -223,7 +202,7 @@ app.post('/api/users/bulk-setup', authenticateToken, isManager, (req, res) => {
   writeDB(db);
 
   res.json({
-    message: `Employee Vu has been removed and added. ${addedUsers.length} new employee`,
+    message:`Added ${addedUsers.length} new employee`,
     added: addedUsers
   });
 });
