@@ -1218,7 +1218,7 @@ function ManagerDashboard({ user, setUser }) {
                     <div className="stat-value">{stats.total}</div>
                   </div>
                   <div className="stat-card">
-                    <div className="stat-label">Morning shift - Worked</div>
+                    <div className="stat-label">Morning shift - At work</div>
                     <div className="stat-value present-stat">{stats.morningPresent}</div>
                   </div>
                   <div className="stat-card">
@@ -1226,7 +1226,7 @@ function ManagerDashboard({ user, setUser }) {
                     <div className="stat-value absent-stat">{stats.morningAbsent}</div>
                   </div>
                   <div className="stat-card">
-                    <div className="stat-label">Afternoon shift - Worked</div>
+                    <div className="stat-label">Afternoon shift - At work</div>
                     <div className="stat-value present-stat">{stats.afternoonPresent}</div>
                   </div>
                   <div className="stat-card">
@@ -1245,10 +1245,10 @@ function ManagerDashboard({ user, setUser }) {
                 return (
                   <div className="attendance-four-columns">
                     <div className="attendance-column present-full-column">
-                      <h3 className="column-title">Working</h3>
+                      <h3 className="column-title">At work</h3>
                       <div className="employee-name-list">
                         {presentFull.length === 0 ? (
-                          <p className="empty-column">Do not have</p>
+                          <p className="empty-column">No data found</p>
                         ) : (
                           presentFull.map((employee) => (
                             <div key={employee.id} className="employee-name-item">
@@ -1259,10 +1259,10 @@ function ManagerDashboard({ user, setUser }) {
                       </div>
                     </div>
                     <div className="attendance-column present-morning-column">
-                      <h3 className="column-title">Working the morning shift</h3>
+                      <h3 className="column-title">Morning shift</h3>
                       <div className="employee-name-list">
                         {presentMorning.length === 0 ? (
-                          <p className="empty-column">Do not</p>
+                          <p className="empty-column">No data found</p>
                         ) : (
                           presentMorning.map((employee) => (
                             <div key={employee.id} className="employee-name-item">
@@ -1273,10 +1273,10 @@ function ManagerDashboard({ user, setUser }) {
                       </div>
                     </div>
                     <div className="attendance-column present-afternoon-column">
-                      <h3 className="column-title">Working the afternoon shift</h3>
+                      <h3 className="column-title">Afternoon shift</h3>
                       <div className="employee-name-list">
                         {presentAfternoon.length === 0 ? (
-                          <p className="empty-column">Do not</p>
+                          <p className="empty-column">No data found</p>
                         ) : (
                           presentAfternoon.map((employee) => (
                             <div key={employee.id} className="employee-name-item">
@@ -1287,10 +1287,10 @@ function ManagerDashboard({ user, setUser }) {
                       </div>
                     </div>
                     <div className="attendance-column absent-column">
-                      <h3 className="column-title">Not working</h3>
+                      <h3 className="column-title">Off</h3>
                       <div className="employee-name-list">
                         {absent.length === 0 ? (
-                          <p className="empty-column">Do not</p>
+                          <p className="empty-column">No data found</p>
                         ) : (
                           absent.map((employee) => (
                             <div key={employee.id} className="employee-name-item">
