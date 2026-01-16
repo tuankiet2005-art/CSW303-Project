@@ -59,12 +59,12 @@ function authenticateToken(req, res, next) {
   const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
-    return res.status(401).json({ error: 'Access token required' });
+    return res.status(401).json({ error: 'Access token required.' });
   }
 
   jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) {
-      return res.status(403).json({ error: 'Invalid or expired token' });
+      return res.status(403).json({ error: 'Invalid or expired token.' });
     }
     req.user = user;
     next();
@@ -74,7 +74,7 @@ function authenticateToken(req, res, next) {
 // Check if user is manager
 function isManager(req, res, next) {
   if (req.user.role !== 'manager') {
-    return res.status(403).json({ error: 'Manager access required' });
+    return res.status(403).json({ error: 'Manager access required.' });
   }
   next();
 }
@@ -88,7 +88,7 @@ app.post('/api/login', (req, res) => {
   const user = db.users.find(u => u.username === username);
 
   if (!user || !bcrypt.compareSync(password, user.password)) {
-    return res.status(401).json({ error: 'Invalid username or password' });
+    return res.status(401).json({ error: 'Invalid username or password.' });
   }
 
   const token = jwt.sign(
@@ -114,7 +114,7 @@ app.get('/api/me', authenticateToken, (req, res) => {
   const db = readDB();
   const user = db.users.find(u => u.id === req.user.id);
   if (!user) {
-    return res.status(404).json({ error: 'User not found' });
+    return res.status(404).json({ error: 'User not found.' });
   }
   res.json({
     id: user.id,
@@ -296,7 +296,7 @@ app.patch('/api/users/:id/reset-password', authenticateToken, isManager, (req, r
   const password = newPassword || '123456';
 
   if (password.length < 6) {
-    return res.status(400).json({ error: 'MThe new password must have at least 6 characters.' });
+    return res.status(400).json({ error: 'The new password must have at least 6 characters.' });
   }
 
   db.users[userIndex].password = bcrypt.hashSync(password, 10);
@@ -516,12 +516,12 @@ app.get('/api/leave-requests/:id', authenticateToken, (req, res) => {
   const request = db.leaveRequests.find(r => r.id === requestId);
 
   if (!request) {
-    return res.status(404).json({ error: 'Leave request not found' });
+    return res.status(404).json({ error: 'Leave request not found.' });
   }
 
   // Check permission
   if (req.user.role !== 'manager' && request.userId !== req.user.id) {
-    return res.status(403).json({ error: 'Access denied' });
+    return res.status(403).json({ error: 'Access denied.' });
   }
 
   res.json(request);
@@ -578,14 +578,14 @@ app.patch('/api/leave-requests/:id/status', authenticateToken, isManager, (req, 
   const { status } = req.body;
 
   if (!['approved', 'rejected', 'pending'].includes(status)) {
-    return res.status(400).json({ error: 'Invalid status' });
+    return res.status(400).json({ error: 'Invalid status.' });
   }
 
   const db = readDB();
   const requestIndex = db.leaveRequests.findIndex(r => r.id === requestId);
 
   if (requestIndex === -1) {
-    return res.status(404).json({ error: 'Leave request not found' });
+    return res.status(404).json({ error: 'Leave request not found.' });
   }
 
   db.leaveRequests[requestIndex].status = status;
@@ -718,7 +718,7 @@ app.get('/api/advance-requests', authenticateToken, (req, res) => {
     res.json(requests || []);
   } catch (err) {
     console.error('Error fetching advance requests:', err);
-    res.status(500).json({ error: 'Error when retrieving payroll list' });
+    res.status(500).json({ error: 'Error when retrieving payroll list.' });
   }
 });
 
@@ -753,7 +753,7 @@ app.patch('/api/advance-requests/:id/status', authenticateToken, isManager, (req
     res.json(db.advanceRequests[requestIndex]);
   } catch (err) {
     console.error('Error updating advance request status:', err);
-    res.status(500).json({ error: 'Error when updating salary advance status' });
+    res.status(500).json({ error: 'Error when updating salary advance status.' });
   }
 });
 
@@ -794,7 +794,7 @@ app.put('/api/advance-requests/:id', authenticateToken, isManager, (req, res) =>
     res.json(db.advanceRequests[requestIndex]);
   } catch (err) {
     console.error('Error updating advance request:', err);
-    res.status(500).json({ error: 'Error when updating salary advance request' });
+    res.status(500).json({ error: 'Error when updating salary advance request.' });
   }
 });
 
@@ -820,10 +820,10 @@ app.delete('/api/advance-requests/:id', authenticateToken, isManager, (req, res)
     db.advanceRequests.splice(requestIndex, 1);
     writeDB(db);
 
-    res.json({ message: 'Salary advance request successfully deleted' });
+    res.json({ message: 'Salary advance request successfully deleted.' });
   } catch (err) {
     console.error('Error deleting advance request:', err);
-    res.status(500).json({ error: 'Error when deleting salary advance request' });
+    res.status(500).json({ error: 'Error when deleting salary advance request.' });
   }
 });
 
