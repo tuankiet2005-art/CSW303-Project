@@ -396,12 +396,12 @@
 }
 
 .reject-button {
-  background: #f44336;
+  background: #f48236;
   color: white;
 }
 
 .reject-button:hover {
-  background: #da190b;
+  background: #cd6b1a;
   transform: translateY(-1px);
 }
 

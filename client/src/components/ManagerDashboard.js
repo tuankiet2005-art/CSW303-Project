@@ -468,7 +468,7 @@ function ManagerDashboard({ user, setUser }) {
           await api.post('/advance-requests', {
             userId: editingSalary.id,
             amount: advanceAmount,
-            reason: 'Monthly salary advance ' + new Date(salaryMonth + '-01').toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })
+            reason: 'Monthly salary advance ' + new Date(salaryMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
           });
         }
       }
@@ -917,7 +917,7 @@ function ManagerDashboard({ user, setUser }) {
                     className="logout-button"
                     style={{ width: '100%' }}
                   >
-                    Remove filter
+                    Clear filter
                   </button>
                 </div>
               </div>
@@ -965,12 +965,12 @@ function ManagerDashboard({ user, setUser }) {
                       <div>
                         <h3>{request.userName}</h3>
                         <p className="request-date">
-                          {request.date ? new Date(request.date).toLocaleDateString('vi-VN') : 
-                           request.startDate ? new Date(request.startDate).toLocaleDateString('vi-VN') : ''}
+                          {request.date ? new Date(request.date).toLocaleDateString('en-US') : 
+                           request.startDate ? new Date(request.startDate).toLocaleDateString('en-US') : ''}
                           {request.timePeriod && ` (${request.timePeriod})`}
                           {request.startTimePeriod && !request.timePeriod && ` (${request.startTimePeriod})`}
                           {request.endDate && request.startDate !== request.endDate && 
-                           ` - ${new Date(request.endDate).toLocaleDateString('vi-VN')}`}
+                           ` - ${new Date(request.endDate).toLocaleDateString('en-US')}`}
                           {request.endTimePeriod && request.startTimePeriod !== request.endTimePeriod && 
                            !request.timePeriod && ` (${request.endTimePeriod})`}
                         </p>
@@ -1181,7 +1181,7 @@ function ManagerDashboard({ user, setUser }) {
                               onClick={() => handleDeleteEmployee(employee.id)}
                               className="delete-button"
                             >
-                              Deleting
+                              Delete
                             </button>
                           </div>
                         </td>
@@ -1218,7 +1218,7 @@ function ManagerDashboard({ user, setUser }) {
                     <div className="stat-value">{stats.total}</div>
                   </div>
                   <div className="stat-card">
-                    <div className="stat-label">Morning shift - Worked</div>
+                    <div className="stat-label">Morning shift - At work</div>
                     <div className="stat-value present-stat">{stats.morningPresent}</div>
                   </div>
                   <div className="stat-card">
@@ -1226,7 +1226,7 @@ function ManagerDashboard({ user, setUser }) {
                     <div className="stat-value absent-stat">{stats.morningAbsent}</div>
                   </div>
                   <div className="stat-card">
-                    <div className="stat-label">Afternoon shift - Worked</div>
+                    <div className="stat-label">Afternoon shift - At work</div>
                     <div className="stat-value present-stat">{stats.afternoonPresent}</div>
                   </div>
                   <div className="stat-card">
@@ -1248,7 +1248,7 @@ function ManagerDashboard({ user, setUser }) {
                       <h3 className="column-title">Present</h3>
                       <div className="employee-name-list">
                         {presentFull.length === 0 ? (
-                          <p className="empty-column">Do not have</p>
+                          <p className="empty-column">No data found</p>
                         ) : (
                           presentFull.map((employee) => (
                             <div key={employee.id} className="employee-name-item">
@@ -1259,10 +1259,10 @@ function ManagerDashboard({ user, setUser }) {
                       </div>
                     </div>
                     <div className="attendance-column present-morning-column">
-                      <h3 className="column-title">Working the morning shift</h3>
+                      <h3 className="column-title">Morning shift</h3>
                       <div className="employee-name-list">
                         {presentMorning.length === 0 ? (
-                          <p className="empty-column">Do not</p>
+                          <p className="empty-column">No data found</p>
                         ) : (
                           presentMorning.map((employee) => (
                             <div key={employee.id} className="employee-name-item">
@@ -1273,10 +1273,10 @@ function ManagerDashboard({ user, setUser }) {
                       </div>
                     </div>
                     <div className="attendance-column present-afternoon-column">
-                      <h3 className="column-title">Working the afternoon shift</h3>
+                      <h3 className="column-title">Afternoon shift</h3>
                       <div className="employee-name-list">
                         {presentAfternoon.length === 0 ? (
-                          <p className="empty-column">Do not</p>
+                          <p className="empty-column">No data found</p>
                         ) : (
                           presentAfternoon.map((employee) => (
                             <div key={employee.id} className="employee-name-item">
@@ -1287,10 +1287,10 @@ function ManagerDashboard({ user, setUser }) {
                       </div>
                     </div>
                     <div className="attendance-column absent-column">
-                      <h3 className="column-title">Not working</h3>
+                      <h3 className="column-title">Off</h3>
                       <div className="employee-name-list">
                         {absent.length === 0 ? (
-                          <p className="empty-column">Do not</p>
+                          <p className="empty-column">No data found</p>
                         ) : (
                           absent.map((employee) => (
                             <div key={employee.id} className="employee-name-item">
@@ -1635,7 +1635,7 @@ function ManagerDashboard({ user, setUser }) {
                     className="logout-button"
                     style={{ width: '100%' }}
                   >
-                    Delete filter
+                    Clear filter
                   </button>
                 </div>
               </div>
@@ -1677,7 +1677,7 @@ function ManagerDashboard({ user, setUser }) {
                           .sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt))
                           .map((request) => (
                         <tr key={request.id}>
-                          <td>{new Date(request.submittedAt).toLocaleString('vi-VN')}</td>
+                          <td>{new Date(request.submittedAt).toLocaleString('en-US')}</td>
                           <td>{request.userName}</td>
                           <td style={{ fontWeight: '600', color: '#2563eb' }}>
                             {new Intl.NumberFormat('vi-VN').format(request.amount)} VNĐ

@@ -480,7 +480,7 @@ function EmployeeDashboard({ user, setUser }) {
                   <p className="request-reason">{request.reason}</p>
                   <div className="request-footer">
                     <span className="request-time">
-                      Send at: {new Date(request.submittedAt).toLocaleString('vi-VN')}
+                      Send at: {new Date(request.submittedAt).toLocaleString('en-US')}
                     </span>
                     <span className="locked-badge">Approved</span>
                   </div>
