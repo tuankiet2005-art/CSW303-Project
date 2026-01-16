@@ -108,7 +108,7 @@ HTTDD/
 - `DELETE /api/leave-requests/:id` - Delete request (only when canEdit = true)
 - `PATCH /api/leave-requests/:id/status` - DApprove/reject request (Manager only)
 
-## Lưu ý
+## Note
 
 - Database is stored in `server/database.json` (auto-created on first run)
 - Default JWT secret key is 'your-secret-key-change-in-production' - should be changed in production environment
