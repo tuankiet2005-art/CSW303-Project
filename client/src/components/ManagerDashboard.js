@@ -468,7 +468,7 @@ function ManagerDashboard({ user, setUser }) {
           await api.post('/advance-requests', {
             userId: editingSalary.id,
             amount: advanceAmount,
-            reason: 'Monthly salary advance ' + new Date(salaryMonth + '-01').toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })
+            reason: 'Monthly salary advance ' + new Date(salaryMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
           });
         }
       }
@@ -917,7 +917,7 @@ function ManagerDashboard({ user, setUser }) {
                     className="logout-button"
                     style={{ width: '100%' }}
                   >
-                    Remove filter
+                    Clear filter
                   </button>
                 </div>
               </div>
@@ -965,12 +965,12 @@ function ManagerDashboard({ user, setUser }) {
                       <div>
                         <h3>{request.userName}</h3>
                         <p className="request-date">
-                          {request.date ? new Date(request.date).toLocaleDateString('vi-VN') : 
-                           request.startDate ? new Date(request.startDate).toLocaleDateString('vi-VN') : ''}
+                          {request.date ? new Date(request.date).toLocaleDateString('en-US') : 
+                           request.startDate ? new Date(request.startDate).toLocaleDateString('en-US') : ''}
                           {request.timePeriod && ` (${request.timePeriod})`}
                           {request.startTimePeriod && !request.timePeriod && ` (${request.startTimePeriod})`}
                           {request.endDate && request.startDate !== request.endDate && 
-                           ` - ${new Date(request.endDate).toLocaleDateString('vi-VN')}`}
+                           ` - ${new Date(request.endDate).toLocaleDateString('en-US')}`}
                           {request.endTimePeriod && request.startTimePeriod !== request.endTimePeriod && 
                            !request.timePeriod && ` (${request.endTimePeriod})`}
                         </p>
@@ -985,7 +985,7 @@ function ManagerDashboard({ user, setUser }) {
                     <p className="request-reason">{request.reason}</p>
                     <div className="request-footer">
                       <span className="request-time">
-                        Gửi lúc: {new Date(request.submittedAt).toLocaleString('vi-VN')}
+                        Send at: {new Date(request.submittedAt).toLocaleString('en-US')}
                       </span>
                       <div className="action-buttons">
                         <button
@@ -1181,7 +1181,7 @@ function ManagerDashboard({ user, setUser }) {
                               onClick={() => handleDeleteEmployee(employee.id)}
                               className="delete-button"
                             >
-                              Deleting
+                              Delete
                             </button>
                           </div>
                         </td>
@@ -1245,7 +1245,7 @@ function ManagerDashboard({ user, setUser }) {
                 return (
                   <div className="attendance-four-columns">
                     <div className="attendance-column present-full-column">
-                      <h3 className="column-title">Đi làm</h3>
+                      <h3 className="column-title">Working</h3>
                       <div className="employee-name-list">
                         {presentFull.length === 0 ? (
                           <p className="empty-column">Do not have</p>
@@ -1365,7 +1365,7 @@ function ManagerDashboard({ user, setUser }) {
             <div className="card-header">
               <h2>Payroll Management</h2>
               <div className="attendance-date-picker">
-                <label>Seleect month: </label>
+                <label>Select month: </label>
                 <input
                   type="month"
                   value={salaryMonth}
@@ -1635,7 +1635,7 @@ function ManagerDashboard({ user, setUser }) {
                     className="logout-button"
                     style={{ width: '100%' }}
                   >
-                    Delete filter
+                    Clear filter
                   </button>
                 </div>
               </div>
@@ -1677,7 +1677,7 @@ function ManagerDashboard({ user, setUser }) {
                           .sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt))
                           .map((request) => (
                         <tr key={request.id}>
-                          <td>{new Date(request.submittedAt).toLocaleString('vi-VN')}</td>
+                          <td>{new Date(request.submittedAt).toLocaleString('en-US')}</td>
                           <td>{request.userName}</td>
                           <td style={{ fontWeight: '600', color: '#2563eb' }}>
                             {new Intl.NumberFormat('vi-VN').format(request.amount)} VNĐ
