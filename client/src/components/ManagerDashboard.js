@@ -1677,7 +1677,7 @@ function ManagerDashboard({ user, setUser }) {
                           .sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt))
                           .map((request) => (
                         <tr key={request.id}>
-                          <td>{new Date(request.submittedAt).toLocaleString('en-US')}</td>
+                          <td>{new Date(request.submittedAt).toLocaleString('vi-VN')}</td>
                           <td>{request.userName}</td>
                           <td style={{ fontWeight: '600', color: '#2563eb' }}>
                             {new Intl.NumberFormat('vi-VN').format(request.amount)} VNĐ
