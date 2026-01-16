@@ -985,7 +985,7 @@ function ManagerDashboard({ user, setUser }) {
                     <p className="request-reason">{request.reason}</p>
                     <div className="request-footer">
                       <span className="request-time">
-                        Gửi lúc: {new Date(request.submittedAt).toLocaleString('vi-VN')}
+                        Submitted at: {new Date(request.submittedAt).toLocaleString('vi-VN')}
                       </span>
                       <div className="action-buttons">
                         <button

@@ -58,7 +58,7 @@ function Login({ setUser }) {
           </div>
           
           <button type="submit" disabled={loading} className="login-button">
-            {loading ? 'login...' : 'Log in'}
+            {loading ? 'Logging in...' : 'Log in'}
           </button>
         </form>
         
