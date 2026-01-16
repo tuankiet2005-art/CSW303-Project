@@ -63,11 +63,11 @@ function ManagerDashboard({ user, setUser }) {
   useEffect(() => {
     if (activeTab === 'leave-requests') {
       fetchLeaveRequests();
-      fetchEmployees(); // Cần để hiển thị danh sách nhân viên trong form tạo đơn
+      fetchEmployees(); // Need to display employee list in the creation form
     } else if (activeTab === 'salary') {
       fetchEmployees();
-      fetchAdvanceRequests(); // Cần để tính số tiền đã ứng và hiển thị danh sách
-      fetchLeaveRequests(); // Cần để tính số ngày nghỉ
+      fetchAdvanceRequests(); // Need to calculate advanced amount and display list
+      fetchLeaveRequests(); // Need to calculate number of days off
     } else if (activeTab === 'advance-salary') {
       fetchAdvanceRequests();
       fetchEmployees();
@@ -428,7 +428,7 @@ function ManagerDashboard({ user, setUser }) {
         salary: parseFloat(salaryForm.salary)
       });
 
-      // Xử lý ứng lương
+      // Handle salary advance
       const advanceAmount = parseFloat(salaryForm.advanceAmount) || 0;
       
       // Fetch advance requests mới nhất trước khi tính toán
@@ -563,7 +563,7 @@ function ManagerDashboard({ user, setUser }) {
               afternoonLeave = true;
             }
           }
-          // If it's in between, assume cả ngày
+          // If it's in between, assume all day
           else {
             morningLeave = true;
             afternoonLeave = true;
@@ -595,26 +595,26 @@ function ManagerDashboard({ user, setUser }) {
   // Group employees by attendance status
   const getGroupedAttendance = () => {
     const statusList = getAttendanceStatus();
-    const presentFull = []; // Đi làm cả 2 ca
-    const presentMorning = []; // Đi làm ca sáng
-    const presentAfternoon = []; // Đi làm ca chiều
-    const absent = []; // Không đi làm
+    const presentFull = []; // Present for both shifts
+    const presentMorning = []; // Present for morning shift only
+    const presentAfternoon = []; // Present for afternoon shift only
+    const absent = []; // Absent for both shifts
 
     statusList.forEach(emp => {
       const morningPresent = emp.morningStatus === 'working';
       const afternoonPresent = emp.afternoonStatus === 'working';
       
       if (morningPresent && afternoonPresent) {
-        // Đi làm cả 2 ca
+       // Present for both shifts
         presentFull.push(emp);
       } else if (morningPresent && !afternoonPresent) {
-        // Chỉ đi làm ca sáng
+        // Present for morning shift only
         presentMorning.push(emp);
       } else if (!morningPresent && afternoonPresent) {
-        // Chỉ đi làm ca chiều
+        // Present for afternoon shift only
         presentAfternoon.push(emp);
       } else {
-        // Không đi làm cả 2 ca
+        // Absent for both shifts
         absent.push(emp);
       }
     });
@@ -925,24 +925,24 @@ function ManagerDashboard({ user, setUser }) {
 
             <div className="requests-list">
               {(() => {
-                // Lọc danh sách đơn nghỉ phép
+                // Filter leave request list
                 let filteredRequests = leaveRequests;
                 
-                // Lọc theo nhân viên
+                // Filter by employee
                 if (leaveRequestFilters.employeeId) {
                   filteredRequests = filteredRequests.filter(
                     req => req.userId === parseInt(leaveRequestFilters.employeeId)
                   );
                 }
                 
-                // Lọc theo trạng thái
+                // Filter by status
                 if (leaveRequestFilters.status) {
                   filteredRequests = filteredRequests.filter(
                     req => req.status === leaveRequestFilters.status
                   );
                 }
                 
-                // Lọc theo tháng
+                // Filter by month
                 if (leaveRequestFilters.month) {
                   filteredRequests = filteredRequests.filter(req => {
                     const requestDate = req.date || req.startDate;
@@ -1604,7 +1604,7 @@ function ManagerDashboard({ user, setUser }) {
               </form>
             )}
 
-            {/* Bộ lọc */}
+           {/* Filter */}
             <div style={{ 
               background: '#f9f9f9', 
               padding: '20px', 
@@ -1644,10 +1644,10 @@ function ManagerDashboard({ user, setUser }) {
             <div style={{ marginTop: '20px' }}>
               <h3 style={{ marginBottom: '15px', fontSize: '18px' }}>Salary advance history</h3>
               {(() => {
-                // Lọc danh sách ứng lương
+                // Filter salary advance requests
                 let filteredRequests = advanceRequests;
                 
-                // Lọc theo nhân viên
+                // Filter by employee
                 if (advanceRequestFilter.employeeId) {
                   filteredRequests = filteredRequests.filter(
                     req => req.userId === parseInt(advanceRequestFilter.employeeId)
@@ -1784,7 +1784,7 @@ function SalaryTable({ employees, salaryMonth, onEditSalary, advanceRequests = [
     }
   }, [employees, salaryMonth, advanceRequests]);
 
-  // Tính số tiền đã ứng cho mỗi nhân viên trong tháng
+  // Calculate the advanced amount for each employee during the month.
   const getAdvanceAmount = (employeeId) => {
     if (!advanceRequests || !Array.isArray(advanceRequests)) {
       return 0;
@@ -1807,7 +1807,7 @@ function SalaryTable({ employees, salaryMonth, onEditSalary, advanceRequests = [
       .reduce((sum, req) => sum + (req.amount || 0), 0);
   };
 
-  // Tính số tiền thực còn (giống công thức tính lương hiện tại của nhân viên)
+  // Calculate the net remaining balance (consistent with the employee's current salary formula)
   const calculateRemainingSalary = (employeeId, totalSalary) => {
     if (!totalSalary || totalSalary <= 0) {
       return 0;
@@ -1818,17 +1818,17 @@ function SalaryTable({ employees, salaryMonth, onEditSalary, advanceRequests = [
     const daysInMonth = new Date(year, month, 0).getDate();
     const currentDay = today.getDate();
     
-    // Kiểm tra xem tháng được chọn có phải tháng hiện tại không
+    // Check if the selected month is the current month
     const isCurrentMonth = year === today.getFullYear() && month === today.getMonth() + 1;
     const daysToCalculate = isCurrentMonth ? currentDay : daysInMonth;
 
-    // Lương 1 ngày = Tổng lương / Tổng ngày trong tháng
+    // Daily wage = Total salary / Total days in the month
     const dailySalary = totalSalary / daysInMonth;
 
-    // Tính số tiền đã ứng trong tháng
+    // Calculate the advanced amount for the month
     const advanceAmount = getAdvanceAmount(employeeId);
 
-    // Tính số ngày nghỉ trong tháng (chỉ tính đến hôm nay nếu là tháng hiện tại)
+    // Calculate the number of days off in the month (count up to today only if it is the current month)
     const monthStart = new Date(year, month - 1, 1);
     monthStart.setHours(0, 0, 0, 0);
     const monthEnd = new Date(year, month, 0);
@@ -1837,7 +1837,7 @@ function SalaryTable({ employees, salaryMonth, onEditSalary, advanceRequests = [
     todayStart.setHours(0, 0, 0, 0);
     const endDate = isCurrentMonth ? todayStart : monthEnd;
 
-    let leaveShifts = 0; // Tổng số ca nghỉ
+    let leaveShifts = 0; // Total off shifts
     (leaveRequests || []).forEach(req => {
       if (!req || req.status !== 'approved' || !req.date || req.userId !== employeeId) return;
       
@@ -1846,22 +1846,22 @@ function SalaryTable({ employees, salaryMonth, onEditSalary, advanceRequests = [
       const leaveDate = new Date(reqYear, reqMonth - 1, reqDay);
       leaveDate.setHours(0, 0, 0, 0);
       
-      // Chỉ tính các ngày nghỉ trong tháng được chọn và <= endDate
+      // Only count days off within the selected month and <= endDate
       if (leaveDate >= monthStart && leaveDate <= endDate) {
         const timePeriod = (req.timePeriod || 'all day').toLowerCase();
         if (timePeriod === 'all day') {
-          leaveShifts += 2; // Nghỉ cả ngày = 2 ca
+          leaveShifts += 2; /// Full day off = 2 shifts
         } else if (timePeriod === 'morning' || timePeriod === 'afternoon' || 
                    timePeriod === 'morning shift' || timePeriod === 'afternoon shift') {
-          leaveShifts += 1; // Nghỉ 1 ca = 1 ca
+          leaveShifts += 1; // 1 shift off = 1 shift
         }
       }
     });
     
-    // Tính số ngày nghỉ: 2 ca = 1 ngày, 1 ca = 0.5 ngày
+    // Calculate the number of days off: 2 shifts = 1 day, 1 shift = 0.5 days
     const leaveDays = leaveShifts / 2;
 
-    // Lương hiện tại = ((Tổng lương / Tổng ngày trong tháng) × Số ngày từ đầu tháng đến hôm nay) - Số tiền ứng - (Số ngày nghỉ × Lương 1 ngày)
+   // Current salary = ((Total salary / Total days in the month) × Days from the start of the month to today) - Advanced amount - (Number of days off × Daily wage)
     const leaveDeduction = leaveDays * dailySalary;
     const currentSalary = (dailySalary * daysToCalculate) - advanceAmount - leaveDeduction;
 
