@@ -96,9 +96,9 @@ HTTDD/
 - `GET /api/me` - Get current user info
 
 ### Users (Manager only)
-- `GET /api/users` - Lấy danh sách users
-- `POST /api/users` - Tạo user mới
-- `DELETE /api/users/:id` - Xóa user
+- `GET /api/users` - Get users list
+- `POST /api/users` - Create new user
+- `DELETE /api/users/:id` - Delete user
 
 ### Leave Requests
 - `GET /api/leave-requests` - Get list of leave requests
