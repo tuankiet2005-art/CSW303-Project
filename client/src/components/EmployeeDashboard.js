@@ -232,8 +232,8 @@ function EmployeeDashboard({ user, setUser }) {
 
   const getStatusText = (status) => {
     switch (status) {
-      case 'approved': return 'Approve';
-      case 'rejected': return 'Rejecte';
+      case 'approved': return 'Approved';
+      case 'rejected': return 'Rejected';
       default: return 'Waiting for approval';
     }
   };
@@ -381,7 +381,7 @@ function EmployeeDashboard({ user, setUser }) {
               </div>
 
               <div className="form-group">
-                <label>Confrim new password</label>
+                <label>Confirm new password</label>
                 <input
                   type="password"
                   value={passwordForm.confirmPassword}
