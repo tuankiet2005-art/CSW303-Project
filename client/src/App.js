@@ -37,7 +37,7 @@ function App() {
         color: 'white',
         fontSize: '20px'
       }}>
-        Đang tải...
+        Loading...
       </div>
     );
   }

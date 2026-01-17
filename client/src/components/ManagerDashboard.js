@@ -500,7 +500,7 @@ function ManagerDashboard({ user, setUser }) {
   const getStatusColor = (status) => {
     switch (status) {
       case 'approved': return '#4caf50';
-      case 'rejected': return '#f44336';
+      case 'rejected': return '#ff9800';
       default: return '#ff9800';
     }
   };
@@ -1724,7 +1724,7 @@ function ManagerDashboard({ user, setUser }) {
                                   onClick={() => handleAdvanceStatusChange(request.id, 'rejected')}
                                   className="reject-button"
                                 >
-                                  Refuse
+                                  Reject
                                 </button>
                               )}
                             </div>
