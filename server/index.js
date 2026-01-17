@@ -296,7 +296,7 @@ app.patch('/api/users/:id/reset-password', authenticateToken, isManager, (req, r
   const password = newPassword || '123456';
 
   if (password.length < 6) {
-    return res.status(400).json({ error: 'MThe new password must have at least 6 characters.' });
+    return res.status(400).json({ error: 'The new password must have at least 6 characters.' });
   }
 
   db.users[userIndex].password = bcrypt.hashSync(password, 10);
@@ -455,7 +455,7 @@ app.post('/api/leave-requests', authenticateToken, (req, res) => {
       status: 'approved', // Approved by default
       submittedAt: new Date().toISOString(),
       canEdit: false, // Employees cannot edit
-      createdByManager: req.user.role === 'manager' && userId ? true : false // Đánh dấu đơn do quản lý tạo
+      createdByManager: req.user.role === 'manager' && userId ? true : false // Mark as created by manager
     };
 
     db.leaveRequests.push(newRequest);
@@ -804,7 +804,7 @@ app.delete('/api/advance-requests/:id', authenticateToken, isManager, (req, res)
     const requestId = parseInt(req.params.id);
     const db = readDB();
 
-    // Đảm bảo advanceRequests luôn là array
+    // Ensure advanceRequests is always an array
     if (!db.advanceRequests || !Array.isArray(db.advanceRequests)) {
       db.advanceRequests = [];
       writeDB(db);
@@ -828,7 +828,7 @@ app.delete('/api/advance-requests/:id', authenticateToken, isManager, (req, res)
 });
 
 // app.get('/', (req, res) => {
-//   res.send('Server đang hoạt động bình thường! Hãy sử dụng các endpoint API (ví dụ: /api/users)');
+// res.send('Server is running normally! Please use API endpoints (e.g., /api/users)');
 // });
 
 app.listen(PORT, () => {

@@ -32,7 +32,7 @@ function EmployeeDashboard({ user, setUser }) {
     fetchAdvanceRequests();
   }, []);
 
-  // Không cần useEffect riêng vì calculateCurrentSalary được gọi trong render
+  // No separate useEffect needed because calculateCurrentSalary is called during render
 
   const fetchLeaveRequests = async () => {
     try {
@@ -108,7 +108,7 @@ function EmployeeDashboard({ user, setUser }) {
 
     // Calculate number of days off in the month (only count up to today)
     // Logic: Count total off shifts, 2 shifts = 1 day, 1 shift = 0.5 days
-    let leaveShifts = 0; // Tổng số ca nghỉ
+    let leaveShifts = 0; // Total off shifts
     (leaveRequests || []).forEach(req => {
       if (!req || req.status !== 'approved' || !req.date) return;
 
