@@ -1703,7 +1703,7 @@ function ManagerDashboard({ user, setUser }) {
                                 onClick={() => handleEditAdvanceRequest(request)}
                                 className="edit-button"
                               >
-                                edit
+                                Edit
                               </button>
                               <button
                                 onClick={() => handleDeleteAdvanceRequest(request.id)}
