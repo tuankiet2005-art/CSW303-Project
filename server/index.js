@@ -452,7 +452,7 @@ app.post('/api/leave-requests', authenticateToken, (req, res) => {
       date,
       timePeriod: timePeriod || 'all day',
       reason: reason || '',
-      status: 'approved', // Approved by default
+      status: req.user.role === 'manager' && userId ? 'approved' : 'pending',
       submittedAt: new Date().toISOString(),
       canEdit: false, // Employees cannot edit
       createdByManager: req.user.role === 'manager' && userId ? true : false // Mark as created by manager
@@ -482,7 +482,7 @@ app.post('/api/leave-requests', authenticateToken, (req, res) => {
     endTimePeriod: endTimePeriod || 'all day',
     reason: reason || '',
     type: type || 'on leave',
-    status: 'approved', // Approved by default
+    status: 'pending', // Pending by default
     submittedAt: new Date().toISOString(),
     canEdit: false // Employees cannot edit
   };
